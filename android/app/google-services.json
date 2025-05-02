@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "66257255126",
+    "project_id": "paperbot-rhxui0",
+    "storage_bucket": "paperbot-rhxui0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66257255126:android:05121e4b2d273db328e777",
+        "android_client_info": {
+          "package_name": "com.example.eduflow_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "66257255126-p6o53urdjvp9gj2i46uridbktl1b9b8m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpPKUJprxJXf35uGDWByMRb4K1lrmXjj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "66257255126-p6o53urdjvp9gj2i46uridbktl1b9b8m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "66257255126-8bm0qaqfctivai7fh62l2ho9o1m2nie2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.paperbot43"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66257255126:android:301a219a4e22224a28e777",
+        "android_client_info": {
+          "package_name": "com.mycompany.paperbot43"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "66257255126-6kk19k2l4eahd0t24di46e711id4ovpt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.paperbot43",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "66257255126-p6o53urdjvp9gj2i46uridbktl1b9b8m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpPKUJprxJXf35uGDWByMRb4K1lrmXjj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "66257255126-p6o53urdjvp9gj2i46uridbktl1b9b8m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "66257255126-8bm0qaqfctivai7fh62l2ho9o1m2nie2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.paperbot43"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

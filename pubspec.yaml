@@ -1,0 +1,27 @@
+name: eduflow_flutter
+version: 1.0.0+1
+description: A full-stack educational platform with role-based onboarding, task management, mark uploads, and AI-powered question paper generation.
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.7
+  flutter_riverpod: ^2.4.9
+  shared_preferences: ^2.2.2
+  http: ^1.2.1
+  intl: ^0.19.0
+  uuid: ^4.2.2
+  flutter_chat_ui: ^1.6.10
+  flutter_chat_types: ^3.6.0
+  cupertino_icons: ^1.0.6
+  dropdown_search: ^5.0.6
+  rxdart: ^0.27.7
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+flutter:
+  uses-material-design: true
