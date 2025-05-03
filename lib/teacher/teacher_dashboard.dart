@@ -11,6 +11,7 @@ import '../widgets/info_card.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/task_card.dart';
 import '../widgets/student_tile.dart';
+import '../widgets/exam_selection_dialog.dart';
 import '../models/student.dart';
 import '../models/class.dart';
 import '../models/task.dart';
@@ -541,92 +542,29 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   }
 
   void _showExamSelectionDialog(String classId, String className, String section) async {
-    final List<String> exams = [
-      'PT 1', 'PT 2', 'Half Yearly', 'PT 3', 'PT 4', 'Yearly'
-    ];
-    // Fetch marks for each exam for this class
-    final firestoreService = FirestoreService();
-    final marksStatus = <String, bool>{};
-    for (final exam in exams) {
-      final marks = await firestoreService.getMarksForClassExam(widget.schoolCode, classId, exam).first;
-      marksStatus[exam] = marks.isNotEmpty;
-    }
     await showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) {
-        final isMobile = MediaQuery.of(context).size.width < 600;
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isMobile ? 16 : 24)),
-          backgroundColor: const Color(0xFFF8F7FC),
-          child: Container(
-            width: isMobile ? double.infinity : 480,
-            constraints: BoxConstraints(maxWidth: 520),
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 32, vertical: isMobile ? 16 : 30),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Select Exam Type',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: isMobile ? 15 : 20,
-                          color: Color(0xFF5B8DEE),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Icon(Icons.close, size: isMobile ? 22 : 28, color: Colors.black87),
-                    ),
-                  ],
-                ),
-                SizedBox(height: isMobile ? 10 : 24),
-                ...exams.map((exam) => ListTile(
-                  leading: marksStatus[exam] == true
-                      ? Icon(Icons.check_circle, color: Colors.green, size: isMobile ? 20 : 26)
-                      : Icon(Icons.radio_button_unchecked, color: Colors.grey, size: isMobile ? 20 : 26),
-                  title: Text(
-                    exam,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: isMobile ? 15 : 17,
-                      color: Color(0xFF222B45),
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pop(exam);
-                  },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  tileColor: marksStatus[exam] == true ? Color(0xFFE6F7EC) : null,
-                  hoverColor: Color(0xFFE9F0FB),
-                  contentPadding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 18, vertical: isMobile ? 6 : 14),
-                )).toList(),
-              ],
+      builder: (context) => ExamSelectionDialog(
+        schoolCode: widget.schoolCode,
+        classId: classId,
+        className: className,
+        section: section,
+        onExamSelected: (selectedExam) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => UploadMarksPage(
+                schoolCode: widget.schoolCode,
+                classId: classId,
+                className: className,
+                section: section,
+                exam: selectedExam,
+              ),
             ),
-          ),
-        );
-      },
-    ).then((selectedExam) {
-      if (selectedExam != null) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => UploadMarksPage(
-              schoolCode: widget.schoolCode,
-              classId: classId,
-              className: className,
-              section: section,
-              exam: selectedExam,
-            ),
-          ),
-        );
-      }
-    });
+          );
+        },
+      ),
+    );
   }
 
   Widget _marksUploadTab(bool isMobile) {

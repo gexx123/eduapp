@@ -36,6 +36,20 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
   String? userRole;
   Map<String, TextEditingController> outOfControllers = {};
 
+  // Grade calculation helper
+  String _calculateGrade(num marks, num outOf) {
+    if (outOf == 0) return '-';
+    final percent = (marks / outOf) * 100;
+    if (percent >= 91) return 'A1';
+    if (percent >= 81) return 'A2';
+    if (percent >= 71) return 'B1';
+    if (percent >= 61) return 'B2';
+    if (percent >= 51) return 'C1';
+    if (percent >= 41) return 'C2';
+    if (percent >= 33) return 'D';
+    return 'E';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -120,7 +134,51 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
 
   Future<void> _uploadMarks() async {
     setState(() => loading = true);
+    bool hasValidationError = false;
+    String errorMsg = '';
     try {
+      // Check for missing marks before uploading
+      for (final student in students) {
+        final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
+        final name = student['name'] ?? '';
+        for (final subject in subjects) {
+          final marksStr = marksControllers[roll]?[subject]?.text.trim();
+          if (marksStr == null || marksStr.isEmpty) {
+            hasValidationError = true;
+            errorMsg = 'Please enter marks for $name ($subject) before uploading.';
+            break;
+          }
+        }
+        if (hasValidationError) break;
+      }
+      if (hasValidationError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg)),
+        );
+        setState(() => loading = false);
+        return;
+      }
+      // Validate that out-of marks are provided for all subjects if any mark is entered
+      for (final subject in subjects) {
+        final outOfStr = outOfControllers[subject]?.text.trim();
+        bool anyMarkEntered = students.any((student) {
+          final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
+          final marksStr = marksControllers[roll]?[subject]?.text.trim();
+          return marksStr != null && marksStr.isNotEmpty;
+        });
+        if (anyMarkEntered && (outOfStr == null || outOfStr.isEmpty)) {
+          hasValidationError = true;
+          errorMsg = 'Please enter the Out of marks for $subject.';
+          break;
+        }
+      }
+      if (hasValidationError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg)),
+        );
+        setState(() => loading = false);
+        return;
+      }
       for (final student in students) {
         final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
         final name = student['name'] ?? '';
@@ -132,15 +190,36 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
         };
         for (final subject in subjects) {
           final controller = marksControllers[roll]?[subject];
-          if (controller != null && controller.text.trim().isNotEmpty) {
-            marksData[subject] = int.tryParse(controller.text.trim()) ?? controller.text.trim();
+          final outOfStr = outOfControllers[subject]?.text.trim();
+          final marksStr = controller?.text.trim();
+          // Validation: Only allow numbers for marks
+          if (marksStr != null && marksStr.isNotEmpty && num.tryParse(marksStr) == null) {
+            hasValidationError = true;
+            errorMsg = 'Marks for $name ($subject) must be a valid number.';
+            break;
           }
-          // Save out-of-marks for this subject if provided
-          final outOf = outOfControllers[subject]?.text.trim();
-          if (outOf != null && outOf.isNotEmpty) {
-            marksData['outOf_$subject'] = int.tryParse(outOf) ?? outOf;
+          num? marks = num.tryParse(marksStr ?? '');
+          num? outOf = num.tryParse(outOfStr ?? '');
+          if (marksStr != null && marksStr.isNotEmpty) {
+            if (outOf != null && marks != null && marks > outOf) {
+              hasValidationError = true;
+              errorMsg = 'Marks for $name ($subject) cannot exceed Out of ($outOf).';
+              break;
+            }
+            marksData[subject] = marks ?? marksStr;
+            // Save out-of-marks
+            if (outOfStr != null && outOfStr.isNotEmpty) {
+              marksData['outOf_$subject'] = outOf ?? outOfStr;
+            }
+            // Calculate and store grade
+            if (marks != null && outOf != null && outOf > 0) {
+              marksData['grade_$subject'] = _calculateGrade(marks, outOf);
+            } else {
+              marksData['grade_$subject'] = '-';
+            }
           }
         }
+        if (hasValidationError) break;
         await _firestoreService.uploadStudentMarks(
           widget.schoolCode,
           widget.classId,
@@ -149,10 +228,16 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
           marksData,
         );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Marks uploaded successfully!')),
-      );
-      Navigator.of(context).pop();
+      if (hasValidationError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Marks uploaded successfully!')),
+        );
+        Navigator.of(context).pop();
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error uploading marks: $e')),
