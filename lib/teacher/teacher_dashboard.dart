@@ -7,6 +7,7 @@ import '../class_management/manage_class_dialog.dart';
 import '../class_management/create_class_dialog.dart';
 import '../class_management/manage_class_page.dart';
 import '../class_management/upload_marks_page.dart';
+import '../class_management/view_marks_report_page.dart';
 import '../widgets/info_card.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/task_card.dart';
@@ -489,7 +490,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
               return Center(child: Text('No classes assigned.'));
             }
             return Column(
-              children: classes.map((c) => _classCard(c.className, c.section, c.students.length)).toList(),
+              children: classes.map((c) => _classCard(c)).toList(),
             );
           },
         ),
@@ -497,7 +498,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     );
   }
 
-  Widget _classCard(String className, String section, int studentCount) {
+  Widget _classCard(SchoolClass schoolClass) {
+    final classId = '${schoolClass.className}_${schoolClass.section}';
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 18, horizontal: 18),
@@ -513,21 +515,45 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$className - $section', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+              Text('${schoolClass.className} - ${schoolClass.section}', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
               SizedBox(height: 4),
-              Text('$studentCount students', style: TextStyle(color: Colors.black54, fontSize: 13)),
+              Text('${schoolClass.students.length} students', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
             ],
           ),
           Row(
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  _showExamSelectionDialog('${className}_$section', className, section);
+                  _showExamSelectionDialog(classId, schoolClass.className, schoolClass.section);
                 },
                 icon: Icon(Icons.file_upload_outlined, size: 16),
                 label: Text('Upload Marks'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF5B8DEE),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  textStyle: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ViewMarksReportPage(
+                        schoolCode: widget.schoolCode,
+                        classId: classId,
+                        className: schoolClass.className,
+                        section: schoolClass.section,
+                      ),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.bar_chart_rounded, size: 16),
+                label: Text('View Report'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF1976D2),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
