@@ -336,24 +336,36 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                                   ...subjects.map((subject) => Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 3),
                                     child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(subject, style: TextStyle(fontSize: 13, color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600)),
-                                        ),
-                                        Expanded(
-                                          flex: 3,
+                                        Text(subject, style: TextStyle(fontSize: 13, color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600)),
+                                        SizedBox(width: 10),
+                                        Container(
+                                          width: 54,
+                                          height: 32,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFF8F7FC),
+                                            borderRadius: BorderRadius.circular(18),
+                                            border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black12.withOpacity(0.06),
+                                                blurRadius: 2,
+                                                offset: Offset(0, 1),
+                                              ),
+                                            ],
+                                          ),
                                           child: TextField(
                                             controller: marksControllers[roll]?[subject],
                                             keyboardType: TextInputType.number,
-                                            style: TextStyle(fontSize: 14),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                             decoration: InputDecoration(
+                                              border: InputBorder.none,
                                               hintText: '-',
-                                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(7)),
-                                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                                               isDense: true,
-                                              filled: true,
-                                              fillColor: Color(0xFFF8F7FC),
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
                                             ),
                                           ),
                                         ),
