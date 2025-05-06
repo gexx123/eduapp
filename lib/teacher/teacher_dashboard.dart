@@ -271,14 +271,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.school, color: Color(0xFF5B8DEE), size: 28),
-                  SizedBox(width: 8),
-                  Text(
-                    widget.schoolName.isEmpty ? 'School Name' : widget.schoolName,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 16 : 20),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(width: 14),
+                  Icon(Icons.person, color: Color(0xFF1976D2), size: 30),
+                  SizedBox(width: 10),
+                  Text(teacherName ?? 'Teacher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 18 : 22)),
+                  SizedBox(width: 16),
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
@@ -287,17 +283,94 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     ),
                     child: Row(
                       children: [
-                        Text('School Code: ', style: TextStyle(fontSize: isMobile ? 10 : 12, color: Colors.black54)),
-                        SelectableText(
-                          widget.schoolCode,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 10 : 12, color: Color(0xFF5B8DEE)),
-                        ),
+                        Text('School Code: ', style: TextStyle(fontSize: isMobile ? 11 : 13, color: Colors.black54)),
+                        SelectableText(widget.schoolCode, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 11 : 13, color: Color(0xFF1976D2))),
                       ],
                     ),
                   ),
                 ],
               ),
-              Icon(Icons.menu, size: 26, color: Colors.black87),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.account_circle, color: Colors.blueGrey, size: 28),
+                onSelected: (value) async {
+                  if (value == 'profile') {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Profile'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('User Name:'),
+                            SizedBox(height: 4),
+                            Text(teacherName ?? 'Teacher', style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 12),
+                            Text('School:'),
+                            SizedBox(height: 4),
+                            Text(widget.schoolName, style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 12),
+                            Text('School Code:'),
+                            SizedBox(height: 4),
+                            Text(widget.schoolCode, style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (value == 'logout') {
+                    await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Log Out'),
+                        content: Text('Are you sure you want to log out?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await Future.delayed(Duration(milliseconds: 100));
+                              await FirebaseAuth.instance.signOut();
+                              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                            },
+                            child: Text('Log Out', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, color: Colors.blueGrey, size: 20),
+                        SizedBox(width: 8),
+                        Text('Profile'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.redAccent, size: 20),
+                        SizedBox(width: 8),
+                        Text('Log Out'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

@@ -5,12 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'landing_page.dart';
 // import 'auth/login_page.dart';
 // import 'services/firebase_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'root_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // Persist auth state on web
+  if (kIsWeb) {
+    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+  }
   runApp(const ProviderScope(child: EduFlowApp()));
 }
 
@@ -25,7 +32,7 @@ class EduFlowApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const LandingPage(),
+      home: const RootPage(),
       debugShowCheckedModeBanner: false,
     );
   }

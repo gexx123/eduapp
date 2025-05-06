@@ -182,12 +182,24 @@ class LoginPage extends StatelessWidget {
                                       );
                                     }
                                   } else if (role == 'parent') {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ParentDashboard(),
-                                      ),
-                                    );
+                                    // Fetch parent school info from group_member
+                                    final uid = userCredential.user!.uid;
+                                    final gmDoc = await FirebaseService.firestore.collection('group_member').where('userId', isEqualTo: uid).limit(1).get();
+                                    final gmData = gmDoc.docs.isNotEmpty ? gmDoc.docs.first.data() : null;
+                                    final schoolCode = gmData != null ? gmData['schoolCode'] ?? '' : '';
+                                    final schoolName = gmData != null ? gmData['schoolName'] ?? '' : '';
+                                    if (schoolCode.toString().isNotEmpty && schoolName.toString().isNotEmpty) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ParentDashboard(schoolName: schoolName, schoolCode: schoolCode),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('School info missing for parent account. Please contact school admin.')),
+                                      );
+                                    }
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text('Unknown role: $role')),

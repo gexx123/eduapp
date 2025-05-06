@@ -171,7 +171,7 @@ class _JoinSchoolPageState extends State<JoinSchoolPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ParentDashboard(),
+              builder: (context) => ParentDashboard(schoolName: schoolName, schoolCode: code),
             ),
           );
         }

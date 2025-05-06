@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firestore_service.dart';
 import '../models/class.dart';
 import '../class_management/view_marks_report_page.dart'; // Correct import path
@@ -68,7 +69,94 @@ class _PrincipalDashboardPageState extends State<PrincipalDashboardPage> {
                   ),
                 ],
               ),
-              Icon(Icons.menu, size: 28, color: Colors.black87),
+              Row(
+                children: [
+                  Icon(Icons.menu, size: 28, color: Colors.black87),
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.account_circle, color: Colors.blueGrey, size: 28),
+                    onSelected: (value) async {
+                      if (value == 'profile') {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Profile'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('User Name:'),
+                                SizedBox(height: 4),
+                                Text('Principal', style: TextStyle(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 12),
+                                Text('School:'),
+                                SizedBox(height: 4),
+                                Text(widget.schoolName, style: TextStyle(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 12),
+                                Text('School Code:'),
+                                SizedBox(height: 4),
+                                Text(widget.schoolCode, style: TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (value == 'logout') {
+                        await showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Log Out'),
+                            content: Text('Are you sure you want to log out?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                  await Future.delayed(Duration(milliseconds: 100));
+                                  try {
+                                    await FirebaseAuth.instance.signOut();
+                                  } catch (_) {}
+                                  Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                                },
+                                child: Text('Log Out', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'profile',
+                        child: Row(
+                          children: [
+                            Icon(Icons.person, color: Colors.blueGrey, size: 20),
+                            SizedBox(width: 8),
+                            Text('Profile'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, color: Colors.redAccent, size: 20),
+                            SizedBox(width: 8),
+                            Text('Log Out'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
         ),

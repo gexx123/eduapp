@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 
 class ParentDashboard extends StatelessWidget {
-  const ParentDashboard({super.key});
+  final String schoolName;
+  final String schoolCode;
+  const ParentDashboard({super.key, required this.schoolName, required this.schoolCode});
 
   @override
   Widget build(BuildContext context) {
     // For now, use mock data. Replace with Firestore queries for real data.
     final studentInfo = {
-      'schoolCode': 'EGERGG',
+      'schoolCode': schoolCode,
       'studentName': 'Alex Smith',
       'rollNumber': '8A15',
       'class': '8A',
@@ -40,6 +43,92 @@ class ParentDashboard extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0.5,
+        actions: [
+          PopupMenuButton<String>(
+            icon: Icon(Icons.account_circle, color: Colors.blueGrey, size: 28),
+            onSelected: (value) async {
+              if (value == 'profile') {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Profile'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('User Name:'),
+                        SizedBox(height: 4),
+                        Text(studentInfo['studentName'] ?? '', style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(height: 12),
+                        Text('School:'),
+                        SizedBox(height: 4),
+                        Text(schoolName, style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(height: 12),
+                        Text('School Code:'),
+                        SizedBox(height: 4),
+                        Text(schoolCode, style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (value == 'logout') {
+                // Log out user
+                await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Log Out'),
+                    content: Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          await Future.delayed(Duration(milliseconds: 100));
+                          try {
+                            await FirebaseAuth.instance.signOut();
+                          } catch (_) {}
+                          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                        },
+                        child: Text('Log Out', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.blueGrey, size: 20),
+                    SizedBox(width: 8),
+                    Text('Profile'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.redAccent, size: 20),
+                    SizedBox(width: 8),
+                    Text('Log Out'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       backgroundColor: Color(0xFFF8FAFC),
       body: SingleChildScrollView(
@@ -84,7 +173,7 @@ class ParentDashboard extends StatelessWidget {
                               Icon(Icons.visibility, size: 16, color: Colors.blueGrey),
                               SizedBox(width: 4),
                               Text('Student Name: ', style: TextStyle(color: Colors.black54)),
-                              Text(studentInfo['studentName'].toString()),
+                              Text(studentInfo['studentName'] ?? '', style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                           SizedBox(height: 4),
