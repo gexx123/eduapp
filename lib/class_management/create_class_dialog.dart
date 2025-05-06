@@ -65,12 +65,13 @@ Future<void> showCreateClassDialog({
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     schoolCode = userDoc.data()?['schoolCode'] as String?;
   }
+  String? errorText;
+  String? sectionErrorText;
   await showDialog(
     context: context,
     barrierDismissible: false,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) {
-        String? errorText;
         bool loading = false;
         final messenger = ScaffoldMessenger.of(context);
         // Use composite document ID (className_section) for each class-section combo
@@ -118,6 +119,7 @@ Future<void> showCreateClassDialog({
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             labelText: 'Class Name',
+                            errorText: errorText,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             filled: true,
                             fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
@@ -140,6 +142,7 @@ Future<void> showCreateClassDialog({
                           maxLength: 2,
                           decoration: InputDecoration(
                             labelText: 'Section',
+                            errorText: sectionErrorText,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             filled: true,
                             fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
@@ -153,6 +156,7 @@ Future<void> showCreateClassDialog({
                                 selection: TextSelection.collapsed(offset: upper.length),
                               );
                             }
+                            setState(() => sectionErrorText = null);
                           },
                         ),
                       ),
@@ -162,35 +166,100 @@ Future<void> showCreateClassDialog({
                     const SizedBox(height: 8),
                     Text(errorText!, style: TextStyle(color: Colors.red)),
                   ],
+                  if (sectionErrorText != null) ...[
+                    const SizedBox(height: 8),
+                    Text(sectionErrorText!, style: TextStyle(color: Colors.red)),
+                  ],
                   const SizedBox(height: 16),
                   DropdownSearch<String>.multiSelection(
                     items: [
+                      '---Selected Subjects---',
+                      ...selectedSubjects,
                       for (var group in subjectGroups) ...[
-                        '--- ${group['group']} ---',
-                        ...List<String>.from(group['subjects'])
+                        '---${group['group']}---',
+                        ...List<String>.from(group['subjects']).where((subject) => !selectedSubjects.contains(subject)),
                       ]
                     ],
                     selectedItems: selectedSubjects,
                     dropdownDecoratorProps: DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
                         labelText: 'Subjects Taught in This Class',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
+                        ),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(Icons.book_rounded, color: Theme.of(context).colorScheme.primary),
                       ),
                     ),
                     popupProps: PopupPropsMultiSelection.menu(
                       showSearchBox: true,
                       searchFieldProps: TextFieldProps(
-                        decoration: InputDecoration(hintText: 'Search subject...'),
+                        decoration: InputDecoration(
+                          hintText: 'Search subject...',
+                          prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                      ),
+                      showSelectedItems: true,
+                      itemBuilder: (context, item, isSelected) => item.startsWith('---')
+                        ? Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                              border: Border(
+                                bottom: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+                              ),
+                            ),
+                            child: Text(
+                              item.replaceAll('-', '').trim(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          )
+                        : ListTile(
+                            title: Text(item),
+                            dense: true,
+                            selected: isSelected,
+                            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                          ),
+                      containerBuilder: (context, popupWidget) => Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: popupWidget,
                       ),
                     ),
-                    itemAsString: (item) => item.startsWith('---') ? item : '   $item',
+                    itemAsString: (item) => item.startsWith('---') ? '' : item,
                     enabled: true,
                     onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
                     dropdownBuilder: (context, selectedItems) {
                       final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
-                      return Text(filtered.isEmpty ? '' : filtered.join(', '));
+                      return filtered.isEmpty
+                        ? Text('')
+                        : Text(filtered.join(', '), 
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 15),
+                          );
                     },
                   ),
                   const SizedBox(height: 18),
@@ -252,38 +321,61 @@ Future<void> showCreateClassDialog({
                       icon: loading ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Icon(Icons.save),
                       label: Text(loading ? 'Creating...' : 'Create Class'),
                       onPressed: loading ? null : () async {
-                        print('[CreateClass] Attempting to create class: className=${_classNameController.text.trim()}, section=${_sectionController.text.trim()}, subjects=$selectedSubjects, students=$students');
-                        final className = _classNameController.text.trim();
-                        final section = _sectionController.text.trim();
-                        if (className.isEmpty) {
-                          messenger.showSnackBar(SnackBar(content: Text('Class name is required')));
-                          print('[CreateClass][Validation] Class name empty');
+                        // Validate class name (must be a number)
+                        if (_classNameController.text.isEmpty || int.tryParse(_classNameController.text) == null) {
+                          setState(() => errorText = 'Please enter a valid class number');
                           return;
                         }
-                        if (int.tryParse(className) == null) {
-                          messenger.showSnackBar(SnackBar(content: Text('Class name must be a number')));
-                          print('[CreateClass][Validation] Class name not numeric');
+
+                        // Validate section (must not be empty and must be uppercase)
+                        if (_sectionController.text.isEmpty) {
+                          setState(() => sectionErrorText = 'Section is required');
                           return;
                         }
-                        if (section.isEmpty) {
-                          messenger.showSnackBar(SnackBar(content: Text('Section is required')));
-                          print('[CreateClass][Validation] Section empty');
-                          return;
-                        }
+
+                        // Validate subjects (at least one must be selected)
                         if (selectedSubjects.isEmpty) {
-                          messenger.showSnackBar(SnackBar(content: Text('Please select at least one subject')));
-                          print('[CreateClass][Validation] No subjects selected');
+                          messenger.showSnackBar(SnackBar(
+                            content: Text('Please select at least one subject'),
+                            backgroundColor: Colors.red,
+                          ));
                           return;
                         }
-                        setState(() { errorText = null; loading = true; });
-                        print('[CreateClass] Passed validation, checking for duplicates...');
-                        final duplicate = await checkDuplicateClass(className, section);
-                        if (duplicate) {
-                          messenger.showSnackBar(SnackBar(content: Text('A class with this name and section already exists.')));
-                          print('[CreateClass][Validation] Duplicate class found');
-                          setState(() { loading = false; });
+
+                        // Validate students (at least one student with both roll and name)
+                        if (students.isEmpty) {
+                          messenger.showSnackBar(SnackBar(
+                            content: Text('Please add at least one student'),
+                            backgroundColor: Colors.red,
+                          ));
                           return;
                         }
+
+                        // Validate each student's roll and name
+                        for (var student in students) {
+                          if (student['roll'].toString().trim().isEmpty || student['name'].toString().trim().isEmpty) {
+                            messenger.showSnackBar(SnackBar(
+                              content: Text('Please fill both roll number and name for all students'),
+                              backgroundColor: Colors.red,
+                            ));
+                            return;
+                          }
+                        }
+
+                        // Check for duplicate class
+                        final isDuplicate = await checkDuplicateClass(
+                          _classNameController.text,
+                          _sectionController.text,
+                        );
+                        if (isDuplicate) {
+                          messenger.showSnackBar(SnackBar(
+                            content: Text('This class-section combination already exists'),
+                            backgroundColor: Colors.red,
+                          ));
+                          return;
+                        }
+
+                        // All validations passed, proceed with class creation
                         try {
                           final user = FirebaseAuth.instance.currentUser;
                           if (user == null) throw Exception("Not signed in");
@@ -292,13 +384,13 @@ Future<void> showCreateClassDialog({
                           if (schoolCode == null) throw Exception("No schoolCode found for user");
                           print('[CreateClass] Creating SchoolClass in Firestore...');
                           // Use composite document ID (className_section) for each class-section combo
-                          final docId = className + '_' + section.toUpperCase();
+                          final docId = _classNameController.text + '_' + _sectionController.text.toUpperCase();
                           // Fetch teacher name from group_member
                           final gmSnap = await FirebaseFirestore.instance.collection('group_member').doc(user.uid).get();
                           final teacherName = gmSnap.data()?['name'] ?? '';
                           final schoolClass = SchoolClass(
-                            className: className,
-                            section: section,
+                            className: _classNameController.text,
+                            section: _sectionController.text,
                             subjects: selectedSubjects,
                             students: students,
                             subjectTeachers: null, // or build as needed

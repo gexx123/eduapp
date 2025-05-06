@@ -190,13 +190,27 @@ class _TeacherOnboardingBottomSheetState extends State<TeacherOnboardingBottomSh
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                      prefixIcon: Icon(Icons.book_rounded, color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                   popupProps: PopupProps.menu(
                     showSearchBox: true,
                     searchFieldProps: TextFieldProps(
-                      decoration: InputDecoration(hintText: 'Search subject...'),
+                      decoration: InputDecoration(
+                        hintText: 'Search subject...',
+                        prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
                     ),
+                    itemBuilder: (context, item, isSelected) => ListTile(
+                      leading: Icon(Icons.menu_book_rounded, color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey),
+                      title: Text(item, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                    ),
+                  ),
+                  dropdownButtonProps: DropdownButtonProps(
+                    icon: Icon(Icons.arrow_drop_down_rounded, color: Theme.of(context).colorScheme.primary),
                   ),
                   onChanged: (val) => setState(() => selectedSubject = val),
                 ),

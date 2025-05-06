@@ -271,9 +271,19 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.person, color: Color(0xFF1976D2), size: 30),
-                  SizedBox(width: 10),
-                  Text(teacherName ?? 'Teacher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 18 : 22)),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    child: Text(
+                      teacherName != null ? teacherName![0].toUpperCase() : '-',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    teacherName ?? 'Teacher',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   SizedBox(width: 16),
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -383,8 +393,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             children: [
               SizedBox(height: 18),
               SummaryCard(
-                title: 'School Information',
-                value: widget.schoolCode,
+                title: widget.schoolName,
+                value: 'School Code: ${widget.schoolCode}',
                 icon: Icons.school,
                 isMobile: isMobile,
               ),
@@ -395,7 +405,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   SizedBox(width: isMobile ? 6 : 18),
                   InfoCard(label: 'Pending Tasks', icon: Icons.assignment, value: '2', isMobile: isMobile),
                   SizedBox(width: isMobile ? 6 : 18),
-                  InfoCard(label: 'Upcoming Due Dates', icon: Icons.calendar_today, value: '2', isMobile: isMobile),
+                  InfoCard(label: 'Due Dates', icon: Icons.calendar_today, value: '2', isMobile: isMobile),
                 ],
               ),
               SizedBox(height: 18),
@@ -511,37 +521,46 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   return StreamBuilder<List<SchoolClass>>(
                     stream: FirestoreService().getClassesForTeacher(schoolCode, uid ?? '', teacherName: teacherName),
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return Container();
                       }
-                      if (snapshot.data!.isEmpty) {
-                        return Container();
-                      }
-                      return ElevatedButton.icon(
-                        onPressed: () {
-                          // Fix: Use classTeacherName for main teacher check, and pass SchoolClass to ManageClassPage
-                          final mainClass = snapshot.data!.firstWhere(
-                            (c) => c.classTeacherName == teacherName,
-                            orElse: () => snapshot.data!.first,
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ManageClassPage(
-                                schoolCode: widget.schoolCode,
-                                schoolClass: mainClass,
+                      return Container(
+                        margin: EdgeInsets.only(top: isMobile ? 12 : 0),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Fix: Use classTeacherName for main teacher check, and pass SchoolClass to ManageClassPage
+                            final mainClass = snapshot.data!.firstWhere(
+                              (c) => c.classTeacherName == teacherName,
+                              orElse: () => snapshot.data!.first,
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ManageClassPage(
+                                  schoolCode: widget.schoolCode,
+                                  schoolClass: mainClass,
+                                ),
                               ),
+                            );
+                          },
+                          icon: Icon(Icons.edit, size: isMobile ? 18 : 20),
+                          label: Text(
+                            'Manage Your Class',
+                            style: TextStyle(fontSize: isMobile ? 13 : 14),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF1976D2),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: Colors.white.withOpacity(0.2)),
                             ),
-                          );
-                        },
-                        icon: Icon(Icons.edit, size: 16),
-                        label: Text('Manage Your Class'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF1976D2),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                          padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                          textStyle: TextStyle(fontWeight: FontWeight.bold),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 12 : 18,
+                              vertical: isMobile ? 10 : 12,
+                            ),
+                            elevation: 2,
+                          ),
                         ),
                       );
                     },
@@ -614,7 +633,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ViewMarksReportPage(
+                      builder: (context) => ViewMarksReportPage(
                         schoolCode: widget.schoolCode,
                         classId: classId,
                         className: schoolClass.className,
