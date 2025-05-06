@@ -232,6 +232,161 @@ class _ManageClassPageState extends State<ManageClassPage> {
               ],
             ),
             SizedBox(height: isMobile ? 14 : 22),
+            Text('Edit Subjects & Assign Teachers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 15 : 17)),
+            SizedBox(height: 10),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final subjectCards = editableClass.subjects.map((subject) => Stack(
+                  children: [
+                    Container(
+                      width: isMobile ? (constraints.maxWidth / 2) - 14 : 170,
+                      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Color(0xFF5B8DEE), width: 1.2),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(Icons.menu_book, color: Color(0xFF5B8DEE), size: isMobile ? 34 : 40),
+                          SizedBox(height: 8),
+                          Text(subject, style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 14 : 16)),
+                          SizedBox(height: 6),
+                          OutlinedButton(
+                            onPressed: () {
+                              showTeacherSelection(subject);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Color(0xFF5B8DEE),
+                              side: BorderSide(color: Color(0xFF5B8DEE)),
+                              textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 12 : 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            ),
+                            child: Text(editableClass.subjectTeachers?[subject] ?? 'Assign Teacher'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: () {
+                          final newSubjects = List<String>.from(editableClass.subjects);
+                          newSubjects.remove(subject);
+                          setState(() {
+                            editableClass = SchoolClass(
+                              className: editableClass.className,
+                              section: editableClass.section,
+                              subjects: newSubjects,
+                              students: editableClass.students,
+                              subjectTeachers: {...subjectTeachers}..remove(subject),
+                              classTeacherName: editableClass.classTeacherName,
+                            );
+                            subjectTeachers.remove(subject);
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 2,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.all(2),
+                          child: Icon(Icons.close, color: Colors.red[400], size: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                )).toList();
+                if (isMobile) {
+                  // 2 per row, centered
+                  List<Row> rows = [];
+                  for (int i = 0; i < subjectCards.length; i += 2) {
+                    rows.add(Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        subjectCards[i],
+                        if (i + 1 < subjectCards.length) subjectCards[i + 1],
+                      ],
+                    ));
+                  }
+                  return Column(children: rows);
+                } else {
+                  return Wrap(
+                    spacing: 18,
+                    runSpacing: 12,
+                    children: subjectCards,
+                  );
+                }
+              },
+            ),
+            SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.add, size: 18),
+                label: Text('Add Subject', style: TextStyle(fontSize: isMobile ? 13 : 15)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF5B8DEE),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  elevation: 0,
+                ),
+                onPressed: () async {
+                  final allSubjects = ['English', 'Hindi', 'Maths', 'Science', 'Social', 'Urdu', 'Sanskrit', 'Sindhi', 'Nepali'];
+                  final available = allSubjects.where((s) => !editableClass.subjects.contains(s)).toList();
+                  String? selected;
+                  await showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text('Add Subject'),
+                      content: DropdownButton<String>(
+                        value: selected,
+                        hint: Text('Select Subject'),
+                        isExpanded: true,
+                        items: available.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                        onChanged: (val) {
+                          selected = val;
+                          (ctx as Element).markNeedsBuild();
+                        },
+                      ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+                        ElevatedButton(
+                          onPressed: selected == null ? null : () {
+                            final newSubjects = List<String>.from(editableClass.subjects)..add(selected!);
+                            setState(() {
+                              editableClass = SchoolClass(
+                                className: editableClass.className,
+                                section: editableClass.section,
+                                subjects: newSubjects,
+                                students: editableClass.students,
+                                subjectTeachers: subjectTeachers,
+                                classTeacherName: editableClass.classTeacherName,
+                              );
+                            });
+                            Navigator.pop(ctx);
+                          },
+                          child: Text('Add'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: isMobile ? 20 : 34),
             Text('Students', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 15 : 17)),
             SizedBox(height: 6),
             ...editableClass.students.map((student) => Card(
@@ -347,44 +502,6 @@ class _ManageClassPageState extends State<ManageClassPage> {
               ),
             ),
             SizedBox(height: isMobile ? 16 : 28),
-            Text('Edit Subjects & Assign Teachers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 15 : 17)),
-            SizedBox(height: 10),
-            Wrap(
-              spacing: isMobile ? 10 : 18,
-              runSpacing: 12,
-              children: editableClass.subjects.map((subject) => Container(
-                width: isMobile ? 140 : 170,
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Color(0xFF5B8DEE), width: 1.2),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.menu_book, color: Color(0xFF5B8DEE), size: isMobile ? 34 : 40),
-                    SizedBox(height: 8),
-                    Text(subject, style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 14 : 16)),
-                    SizedBox(height: 6),
-                    OutlinedButton(
-                      onPressed: () {
-                        showTeacherSelection(subject);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Color(0xFF5B8DEE),
-                        side: BorderSide(color: Color(0xFF5B8DEE)),
-                        textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 12 : 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      ),
-                      child: Text(editableClass.subjectTeachers?[subject] ?? 'Assign Teacher'),
-                    ),
-                  ],
-                ),
-              )).toList(),
-            ),
-            SizedBox(height: isMobile ? 20 : 34),
             Center(
               child: ElevatedButton(
                 onPressed: () async {

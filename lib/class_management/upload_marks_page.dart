@@ -299,69 +299,135 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                               ],
                             ),
                           ),
-                        // Beautiful marks table
-                        Container(
-                          margin: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
-                          padding: EdgeInsets.symmetric(vertical: isMobile ? 6 : 12, horizontal: isMobile ? 6 : 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(isMobile ? 10 : 16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.08),
-                                blurRadius: 12,
-                                offset: Offset(0, 2),
+                        // --- MOBILE MARKS LIST ---
+                        if (isMobile)
+                          ...students.map((student) {
+                            final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
+                            final name = student['name'] ?? '';
+                            return Container(
+                              margin: EdgeInsets.symmetric(vertical: 7, horizontal: 8),
+                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.08),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(
-                              headingRowColor: MaterialStateProperty.all(Color(0xFFEDF2FB)),
-                              columnSpacing: isMobile ? 12 : 24,
-                              dataRowMinHeight: isMobile ? 32 : 48,
-                              dataRowMaxHeight: isMobile ? 44 : 56,
-                              columns: [
-                                DataColumn(label: Text('Roll', style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 13 : 15, color: Color(0xFF222B45)))),
-                                DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 13 : 15, color: Color(0xFF222B45)))),
-                                ...subjects.map((s) => DataColumn(label: Text(s, style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 13 : 15, color: Color(0xFF5B8DEE))))).toList(),
-                              ],
-                              rows: students.map((student) {
-                                final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
-                                final name = student['name'] ?? '';
-                                return DataRow(
-                                  cells: [
-                                    DataCell(Text(roll, style: TextStyle(fontSize: isMobile ? 13 : 15))),
-                                    DataCell(Text(name, style: TextStyle(fontSize: isMobile ? 13 : 15, fontWeight: FontWeight.w500))),
-                                    ...subjects.map((subject) {
-                                      return DataCell(
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFF8F7FC),
-                                            borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
-                                            border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
-                                          ),
-                                          padding: EdgeInsets.symmetric(horizontal: 2),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(child: Text('Roll: $roll', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF222B45)))),
+                                    ],
+                                  ),
+                                  SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Expanded(child: Text('Name: $name', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14))),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  ...subjects.map((subject) => Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 3),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(subject, style: TextStyle(fontSize: 13, color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600)),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
                                           child: TextField(
                                             controller: marksControllers[roll]?[subject],
                                             keyboardType: TextInputType.number,
-                                            style: TextStyle(fontSize: isMobile ? 13 : 15),
+                                            style: TextStyle(fontSize: 14),
                                             decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: isMobile ? 6 : 10),
-                                              isDense: true,
                                               hintText: '-',
+                                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(7)),
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                              isDense: true,
+                                              filled: true,
+                                              fillColor: Color(0xFFF8F7FC),
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }).toList(),
-                                  ],
-                                );
-                              }).toList(),
+                                      ],
+                                    ),
+                                  )),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        // --- DESKTOP/TABLET MARKS TABLE ---
+                        if (!isMobile)
+                          Container(
+                            margin: EdgeInsets.only(top: 24, left: 18, right: 18),
+                            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.08),
+                                  blurRadius: 12,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                headingRowColor: MaterialStateProperty.all(Color(0xFFEDF2FB)),
+                                columnSpacing: 24,
+                                dataRowMinHeight: 48,
+                                dataRowMaxHeight: 56,
+                                columns: [
+                                  DataColumn(label: Text('Roll', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF222B45)))),
+                                  DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF222B45)))),
+                                  ...subjects.map((s) => DataColumn(label: Text(s, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF5B8DEE))))).toList(),
+                                ],
+                                rows: students.map((student) {
+                                  final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
+                                  final name = student['name'] ?? '';
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(Text(roll, style: TextStyle(fontSize: 15))),
+                                      DataCell(Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500))),
+                                      ...subjects.map((subject) {
+                                        return DataCell(
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFF8F7FC),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
+                                            ),
+                                            padding: EdgeInsets.symmetric(horizontal: 2),
+                                            child: TextField(
+                                              controller: marksControllers[roll]?[subject],
+                                              keyboardType: TextInputType.number,
+                                              style: TextStyle(fontSize: 15),
+                                              decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                                                isDense: true,
+                                                hintText: '-',
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
-                        ),
                         Spacer(),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 24, vertical: isMobile ? 8 : 16),

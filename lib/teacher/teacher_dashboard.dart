@@ -414,9 +414,9 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
               Builder(
                 builder: (context) {
                   if (tabIndex == 0) {
-                    return _assignedTasksTab(isMobile);
-                  } else if (tabIndex == 1) {
                     return _classesTab(isMobile);
+                  } else if (tabIndex == 1) {
+                    return _assignedTasksTab(isMobile);
                   } else {
                     return _marksUploadTab(isMobile);
                   }
@@ -430,7 +430,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   }
 
   Widget _teacherTabBar(bool isMobile) {
-    final tabs = ['Assigned Tasks', 'Classes & Marks', 'Question Papers'];
+    final tabs = ['Classes & Marks', 'Assigned Tasks', 'Question Papers'];
     return Container(
       margin: EdgeInsets.only(bottom: 6),
       child: Row(
