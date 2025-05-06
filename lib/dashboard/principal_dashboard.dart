@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firestore_service.dart';
 import '../models/class.dart';
+import '../class_management/view_marks_report_page.dart'; // Correct import path
 
 class PrincipalDashboardPage extends StatefulWidget {
   final String schoolName;
@@ -300,11 +301,37 @@ class _PrincipalDashboardPageState extends State<PrincipalDashboardPage> {
                       : 'Unassigned')),
                 ],
               ),
-              trailing: ElevatedButton(
+              trailing: TextButton.icon(
+                style: TextButton.styleFrom(
+                  backgroundColor: Color(0xFF5B8DEE).withOpacity(0.1),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: Color(0xFF5B8DEE).withOpacity(0.3)),
+                  ),
+                ),
                 onPressed: () {
-                  // TODO: Implement view class details
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ViewMarksReportPage(
+                        schoolCode: widget.schoolCode,
+                        classId: classId,
+                        className: c.className,
+                        section: c.section,
+                        exam: null,
+                      ),
+                    ),
+                  );
                 },
-                child: Text('View'),
+                icon: Icon(Icons.visibility_outlined, size: 18, color: Color(0xFF5B8DEE)),
+                label: Text(
+                  'View Report',
+                  style: TextStyle(
+                    color: Color(0xFF5B8DEE),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             );
           },
