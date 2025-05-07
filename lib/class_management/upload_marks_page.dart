@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firestore_service.dart';
 import '../models/student.dart';
+import '../widgets/upload_marks/student_marks_row.dart';
+import '../widgets/upload_marks/out_of_marks_row.dart';
 
 /// UploadMarksPage: Allows teachers to enter and upload marks for a class & exam
 class UploadMarksPage extends StatefulWidget {
@@ -268,38 +270,15 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                       children: [
                         // Out-of-marks row
                         if (subjects.isNotEmpty)
-                          Container(
-                            margin: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
-                            padding: EdgeInsets.symmetric(vertical: isMobile ? 6 : 12, horizontal: isMobile ? 6 : 16),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFEDF2FB),
-                              borderRadius: BorderRadius.circular(isMobile ? 10 : 16),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SizedBox(width: isMobile ? 35 : 55),
-                                SizedBox(width: isMobile ? 60 : 100, child: Text('Out of', style: TextStyle(color: Color(0xFF5B8DEE), fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 15))),
-                                ...subjects.map((subject) => SizedBox(
-                                  width: isMobile ? 52 : 80,
-                                  child: TextField(
-                                    controller: outOfControllers[subject],
-                                    keyboardType: TextInputType.number,
-                                    style: TextStyle(fontSize: isMobile ? 13 : 15, color: Color(0xFF222B45)),
-                                    decoration: InputDecoration(
-                                      hintText: 'Max',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(isMobile ? 6 : 8)),
-                                      contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: isMobile ? 6 : 10),
-                                      isDense: true,
-                                      filled: true,
-                                      fillColor: Color(0xFFF8F7FC),
-                                    ),
-                                  ),
-                                )).toList(),
-                              ],
+                          Padding(
+                            padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
+                            child: OutOfMarksRow(
+                              subjects: subjects,
+                              outOfControllers: outOfControllers,
+                              isMobile: isMobile,
                             ),
                           ),
-                        // Compact marks entry UI for all platforms
+                        // Modular marks entry UI for all platforms
                         Expanded(
                           child: ListView.builder(
                             padding: EdgeInsets.only(top: 10, left: 8, right: 8, bottom: 0),
@@ -308,70 +287,17 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                               final student = students[idx];
                               final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
                               final name = student['name'] ?? '';
-                              return Container(
-                                margin: EdgeInsets.symmetric(vertical: 7, horizontal: 2),
-                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Color(0xFFEDF2FB)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.02),
-                                      blurRadius: 2,
-                                      offset: Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text('Roll: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
-                                    Text(roll, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
-                                    SizedBox(width: 10),
-                                    Text('Name: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
-                                    SizedBox(width: 2),
-                                    Container(
-                                      constraints: BoxConstraints(maxWidth: 90),
-                                      child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15), overflow: TextOverflow.ellipsis),
-                                    ),
-                                    SizedBox(width: 12),
-                                    ...subjects.map((subject) => Row(
-                                      children: [
-                                        Text(subject, style: TextStyle(color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600, fontSize: 14)),
-                                        SizedBox(width: 8),
-                                        Container(
-                                          width: 70,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFF8F7FC),
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: TextField(
-                                            controller: marksControllers[roll]?[subject],
-                                            keyboardType: TextInputType.number,
-                                            style: TextStyle(fontSize: 15),
-                                            textAlign: TextAlign.center,
-                                            decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                                              isDense: true,
-                                              hintText: '-',
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(width: 10),
-                                      ],
-                                    )).toList(),
-                                  ],
-                                ),
+                              return StudentMarksRow(
+                                roll: roll,
+                                name: name,
+                                subjects: subjects,
+                                marksControllers: marksControllers[roll] ?? {},
+                                isMobile: isMobile,
                               );
                             },
                           ),
                         ),
-                        Spacer(),
+                        // Sticky Upload Marks button
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 24, vertical: isMobile ? 8 : 16),
                           child: SizedBox(
