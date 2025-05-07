@@ -299,85 +299,74 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                               ],
                             ),
                           ),
-                        // --- MOBILE MARKS LIST ---
+                        // Responsive marks entry UI
                         if (isMobile)
-                          ...students.map((student) {
-                            final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
-                            final name = student['name'] ?? '';
-                            return Container(
-                              margin: EdgeInsets.symmetric(vertical: 7, horizontal: 8),
-                              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.08),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(child: Text('Roll: $roll', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF222B45)))),
-                                    ],
-                                  ),
-                                  SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Expanded(child: Text('Name: $name', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14))),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8),
-                                  ...subjects.map((subject) => Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 3),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                          Expanded(
+                            child: ListView.builder(
+                              padding: EdgeInsets.only(top: 10, left: 8, right: 8, bottom: 0),
+                              itemCount: students.length,
+                              itemBuilder: (context, idx) {
+                                final student = students[idx];
+                                final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
+                                final name = student['name'] ?? '';
+                                return Card(
+                                  margin: EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                                  elevation: 0,
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(subject, style: TextStyle(fontSize: 13, color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600)),
-                                        SizedBox(width: 10),
-                                        Container(
-                                          width: 54,
-                                          height: 32,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFF8F7FC),
-                                            borderRadius: BorderRadius.circular(18),
-                                            border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black12.withOpacity(0.06),
-                                                blurRadius: 2,
-                                                offset: Offset(0, 1),
+                                        Row(
+                                          children: [
+                                            Text('Roll: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
+                                            Text(roll, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+                                            SizedBox(width: 18),
+                                            Text('Name: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
+                                            Expanded(child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15), overflow: TextOverflow.ellipsis)),
+                                          ],
+                                        ),
+                                        SizedBox(height: 10),
+                                        ...subjects.map((subject) => Padding(
+                                          padding: const EdgeInsets.only(bottom: 8),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Text(subject, style: TextStyle(color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600, fontSize: 14)),
+                                              SizedBox(width: 14),
+                                              Expanded(
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFF8F7FC),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
+                                                  ),
+                                                  child: TextField(
+                                                    controller: marksControllers[roll]?[subject],
+                                                    keyboardType: TextInputType.number,
+                                                    style: TextStyle(fontSize: 15),
+                                                    decoration: InputDecoration(
+                                                      border: InputBorder.none,
+                                                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                                      isDense: true,
+                                                      hintText: '-',
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
-                                          child: TextField(
-                                            controller: marksControllers[roll]?[subject],
-                                            keyboardType: TextInputType.number,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                                            decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              hintText: '-',
-                                              isDense: true,
-                                              contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
-                                            ),
-                                          ),
-                                        ),
+                                        )).toList(),
                                       ],
                                     ),
-                                  )),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        // --- DESKTOP/TABLET MARKS TABLE ---
-                        if (!isMobile)
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        else
                           Container(
                             margin: EdgeInsets.only(top: 24, left: 18, right: 18),
                             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
