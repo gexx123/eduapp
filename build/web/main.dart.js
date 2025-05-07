@@ -8692,7 +8692,7 @@ q=t.H7
 p=A.a([],q)
 o=t.N
 n=t.z
-m=A.a([A.ac(["group","Languages","subjects",A.a(["English","Hindi","Sanskrit","Urdu","French","German","Spanish","Russian","Chinese","Assamese","Bengali","Gujarati","Kannada","Kashmiri","Malayalam","Manipuri","Marathi","Odia","Punjabi","Tamil","Telugu","Sindhi","Nepali","Bodo","Dogri","Garo","Khasi","Lepcha","Limboo","Mizo","Rajasthani","Santhali","Sherpa","Tibetan","Bhutia","Persian","Japanese"],h)],o,n),A.ac(["group","Sciences","subjects",A.a(["Mathematics","Applied Mathematics","Physics","Chemistry","Biology","Biotechnology","Computer Science","Information Practices","Environmental Science","Science","Home Science","Psychology"],h)],o,n),A.ac(["group","Commerce","subjects",A.a(["Accountancy","Business Studies","Economics","Banking","Marketing","Entrepreneurship","Statistics"],h)],o,n),A.ac(["group","Humanities","subjects",A.a(["History","Geography","Political Science","Sociology","Fine Arts","Legal Studies","Mass Media","Media Studies","Design"],h)],o,n),A.ac(["group","Vocational/Professional","subjects",A.a(["Vocational Studies","Retail","Automobile","Health Care","Tourism","Web Application","Artificial Intelligence","Fashion Studies"],h)],o,n),A.ac(["group","Other","subjects",A.a(["Music","Dance","Painting","Physical Education","Yoga","Other"],h)],o,n)],q)
+m=A.a([A.ac(["group","Sciences","subjects",A.a(["Mathematics","Applied Mathematics","Physics","Chemistry","Biology","Biotechnology","Computer Science","Information Practices","Environmental Science","Science","Home Science","Psychology","Geology","Agriculture","Electronics Technology"],h)],o,n),A.ac(["group","Commerce","subjects",A.a(["Accountancy","Business Studies","Economics","Banking","Marketing","Entrepreneurship","Statistics","Taxation","Office Procedures & Practices","Secretarial Practice"],h)],o,n),A.ac(["group","Languages","subjects",A.a(["English","Hindi","Sanskrit","Urdu","French","German","Spanish","Russian","Chinese","Assamese","Bengali","Gujarati","Kannada","Kashmiri","Malayalam","Manipuri","Marathi","Odia","Punjabi","Tamil","Telugu","Sindhi","Nepali","Bodo","Dogri","Garo","Khasi","Lepcha","Limboo","Mizo","Rajasthani","Santhali","Sherpa","Tibetan","Bhutia","Persian","Japanese","Maithili","Arabic"],h)],o,n),A.ac(["group","Humanities","subjects",A.a(["History","Geography","Political Science","Sociology","Fine Arts","Legal Studies","Mass Media","Media Studies","Design","Philosophy","Library & Information Science"],h)],o,n),A.ac(["group","Vocational/Professional","subjects",A.a(["Vocational Studies","Retail","Automobile","Health Care","Tourism","Web Application","Artificial Intelligence","Fashion Studies","Financial Market Management","IT/ITES","Beauty & Wellness","Food Production","Textile Design"],h)],o,n),A.ac(["group","Other","subjects",A.a(["Music","Dance","Painting","Physical Education","Yoga","Other","General Studies","Work Experience","SUPW","NCC"],h)],o,n)],q)
 q=t.Ew
 A.P(new A.fZ(m,new A.aLg(),q),!0,q.i("j.E"))
 j.b=null
@@ -51960,8 +51960,8 @@ $S:0}
 A.aI5.prototype={
 $2(a1,a2){var s,r,q,p,o,n,m,l,k,j,i,h,g=null,f=4284190190,e=a2.b<600,d=t.p,c=A.a([],d),b=this.a,a=b.w,a0=a.length
 if(a0===1){a0=e?10:24
-s=e?4:18
-r=e?4:18
+s=e?12:24
+r=e?12:24
 a=B.n.gW(a)
 q=e?16:18
 q=A.r(a,g,g,g,g,A.Q(g,g,A.V(4279858898),g,g,g,g,g,g,g,g,q,g,g,B.J,g,g,!0,g,g,g,g,g,g,g,g),g,g)
@@ -51978,8 +51978,8 @@ i=A.D(a1).ax
 h=i.aS
 i=h==null?i.k2:h
 c.push(new A.aO(new A.O(s,a0,r,0),A.bf(A.a([q,A.bf(A.a([a,p,A.X(A.fu(!0,B.bg,!1,g,B.X,A.fS(),m,g,g,g,2,A.ep(g,new A.cI(4,k,B.bu),g,new A.O(6,j,6,j),g,g,g,g,!0,g,g,g,g,g,g,i,!0,g,g,g,g,g,g,g,g,g,g,g,g,g,"Max",g,g,g,g,g,!0,g,g,g,!0,g,g,g,g,g,g,g,g,g,g,g,g,g),B.a9,!0,g,!0,g,!1,g,g,g,B.fZ,g,g,1,g,g,!1,"\u2022",g,g,g,!1,g,g,B.bv,g,g,B.b8,B.b3,g,g,g,g,l,B.ba,g,B.bF,g,g),n,o)],d),B.V,B.M,B.b0,g)],d),B.V,B.c0,B.Q,g),g))}else if(a0!==0){d=e?10:24
-a0=e?4:18
-c.push(new A.aO(new A.O(a0,d,e?4:18,0),new A.Ts(a,b.Q,e,g),g))}c.push(A.di(A.aN5(!0,!0,!0,g,B.X,g,B.a9,new A.aI4(b,e),b.f.length,g,B.iw,new A.O(8,10,8,0),g,g,g,!1,B.aI,g,!1),1))
+a0=e?12:24
+c.push(new A.aO(new A.O(a0,d,e?12:24,0),new A.Ts(a,b.Q,e,g),g))}c.push(A.di(A.aN5(!0,!0,!0,g,B.X,g,B.a9,new A.aI4(b,e),b.f.length,g,B.iw,new A.O(8,10,8,0),g,g,g,!1,B.aI,g,!1),1))
 d=e?6:24
 a=e?8:16
 a0=A.bP(B.Un,g,g,e?18:20)

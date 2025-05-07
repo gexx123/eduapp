@@ -271,7 +271,7 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                         // Header row: Subject + Marks Out Of
                         if (subjects.length == 1)
                           Padding(
-                            padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
+                            padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 12 : 24, right: isMobile ? 12 : 24),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -307,7 +307,7 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                           )
                         else if (subjects.isNotEmpty)
                           Padding(
-                            padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
+                            padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 12 : 24, right: isMobile ? 12 : 24),
                             child: OutOfMarksRow(
                               subjects: subjects,
                               outOfControllers: outOfControllers,
