@@ -299,136 +299,78 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                               ],
                             ),
                           ),
-                        // Responsive marks entry UI
-                        if (isMobile)
-                          Expanded(
-                            child: ListView.builder(
-                              padding: EdgeInsets.only(top: 10, left: 8, right: 8, bottom: 0),
-                              itemCount: students.length,
-                              itemBuilder: (context, idx) {
-                                final student = students[idx];
-                                final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
-                                final name = student['name'] ?? '';
-                                return Card(
-                                  margin: EdgeInsets.symmetric(vertical: 7, horizontal: 2),
-                                  elevation: 0,
+                        // Compact marks entry UI for all platforms
+                        Expanded(
+                          child: ListView.builder(
+                            padding: EdgeInsets.only(top: 10, left: 8, right: 8, bottom: 0),
+                            itemCount: students.length,
+                            itemBuilder: (context, idx) {
+                              final student = students[idx];
+                              final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
+                              final name = student['name'] ?? '';
+                              return Container(
+                                margin: EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                decoration: BoxDecoration(
                                   color: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text('Roll: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
-                                            Text(roll, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
-                                            SizedBox(width: 18),
-                                            Text('Name: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
-                                            Expanded(child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15), overflow: TextOverflow.ellipsis)),
-                                          ],
-                                        ),
-                                        SizedBox(height: 10),
-                                        ...subjects.map((subject) => Padding(
-                                          padding: const EdgeInsets.only(bottom: 8),
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Text(subject, style: TextStyle(color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600, fontSize: 14)),
-                                              SizedBox(width: 14),
-                                              Expanded(
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xFFF8F7FC),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                    border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
-                                                  ),
-                                                  child: TextField(
-                                                    controller: marksControllers[roll]?[subject],
-                                                    keyboardType: TextInputType.number,
-                                                    style: TextStyle(fontSize: 15),
-                                                    decoration: InputDecoration(
-                                                      border: InputBorder.none,
-                                                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                                      isDense: true,
-                                                      hintText: '-',
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )).toList(),
-                                      ],
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Color(0xFFEDF2FB)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.02),
+                                      blurRadius: 2,
+                                      offset: Offset(0, 1),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        else
-                          Container(
-                            margin: EdgeInsets.only(top: 24, left: 18, right: 18),
-                            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.08),
-                                  blurRadius: 12,
-                                  offset: Offset(0, 2),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                headingRowColor: MaterialStateProperty.all(Color(0xFFEDF2FB)),
-                                columnSpacing: 24,
-                                dataRowMinHeight: 48,
-                                dataRowMaxHeight: 56,
-                                columns: [
-                                  DataColumn(label: Text('Roll', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF222B45)))),
-                                  DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF222B45)))),
-                                  ...subjects.map((s) => DataColumn(label: Text(s, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF5B8DEE))))).toList(),
-                                ],
-                                rows: students.map((student) {
-                                  final roll = student['roll']?.toString() ?? student['rollNumber']?.toString() ?? '';
-                                  final name = student['name'] ?? '';
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(Text(roll, style: TextStyle(fontSize: 15))),
-                                      DataCell(Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500))),
-                                      ...subjects.map((subject) {
-                                        return DataCell(
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFF8F7FC),
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
-                                            ),
-                                            padding: EdgeInsets.symmetric(horizontal: 2),
-                                            child: TextField(
-                                              controller: marksControllers[roll]?[subject],
-                                              keyboardType: TextInputType.number,
-                                              style: TextStyle(fontSize: 15),
-                                              decoration: InputDecoration(
-                                                border: InputBorder.none,
-                                                contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-                                                isDense: true,
-                                                hintText: '-',
-                                              ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text('Roll: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
+                                    Text(roll, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+                                    SizedBox(width: 10),
+                                    Text('Name: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF222B45))),
+                                    SizedBox(width: 2),
+                                    Container(
+                                      constraints: BoxConstraints(maxWidth: 90),
+                                      child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15), overflow: TextOverflow.ellipsis),
+                                    ),
+                                    SizedBox(width: 12),
+                                    ...subjects.map((subject) => Row(
+                                      children: [
+                                        Text(subject, style: TextStyle(color: Color(0xFF5B8DEE), fontWeight: FontWeight.w600, fontSize: 14)),
+                                        SizedBox(width: 8),
+                                        Container(
+                                          width: 70,
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFF8F7FC),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Color(0xFF5B8DEE).withOpacity(0.18)),
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: TextField(
+                                            controller: marksControllers[roll]?[subject],
+                                            keyboardType: TextInputType.number,
+                                            style: TextStyle(fontSize: 15),
+                                            textAlign: TextAlign.center,
+                                            decoration: InputDecoration(
+                                              border: InputBorder.none,
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                                              isDense: true,
+                                              hintText: '-',
                                             ),
                                           ),
-                                        );
-                                      }).toList(),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
+                                        ),
+                                        SizedBox(width: 10),
+                                      ],
+                                    )).toList(),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
+                        ),
                         Spacer(),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 24, vertical: isMobile ? 8 : 16),
