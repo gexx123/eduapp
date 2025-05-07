@@ -268,8 +268,44 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
                     final isMobile = constraints.maxWidth < 600;
                     return Column(
                       children: [
-                        // Out-of-marks row
-                        if (subjects.isNotEmpty)
+                        // Header row: Subject + Marks Out Of
+                        if (subjects.length == 1)
+                          Padding(
+                            padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(subjects.first, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 16 : 18, color: Color(0xFF1976D2))),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('Marks Out Of', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 15, color: Color(0xFF5B8DEE))),
+                                    SizedBox(width: isMobile ? 8 : 16),
+                                    SizedBox(
+                                      width: isMobile ? 70 : 90,
+                                      height: isMobile ? 32 : 36,
+                                      child: TextField(
+                                        controller: outOfControllers[subjects.first],
+                                        keyboardType: TextInputType.number,
+                                        style: TextStyle(fontSize: isMobile ? 13 : 15),
+                                        textAlign: TextAlign.center,
+                                        decoration: InputDecoration(
+                                          hintText: 'Max',
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(isMobile ? 6 : 8)),
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: isMobile ? 6 : 10),
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: Theme.of(context).colorScheme.background,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (subjects.isNotEmpty)
                           Padding(
                             padding: EdgeInsets.only(top: isMobile ? 10 : 24, left: isMobile ? 4 : 18, right: isMobile ? 4 : 18),
                             child: OutOfMarksRow(

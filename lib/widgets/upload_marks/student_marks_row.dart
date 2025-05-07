@@ -37,32 +37,28 @@ class StudentMarksRow extends StatelessWidget {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('Roll:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSize, color: const Color(0xFF222B45))),
-            SizedBox(width: labelSpacing),
-            Text(roll, style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSize)),
-            SizedBox(width: labelSpacing),
-            Text('Name:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSize, color: const Color(0xFF222B45))),
-            SizedBox(width: 4),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: isMobile ? 70 : 120),
-              child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSize), overflow: TextOverflow.ellipsis, maxLines: 1),
-            ),
-            SizedBox(width: labelSpacing),
-            ...subjects.map((subject) => Row(
+      child: subjects.length == 1
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('$subject:', style: TextStyle(color: const Color(0xFF5B8DEE), fontWeight: FontWeight.w600, fontSize: fontSize)),
-                SizedBox(width: 6),
+                // Left: Roll
+                Text('Roll: $roll', style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSize, color: const Color(0xFF222B45))),
+                // Center: Name (flexible)
+                Expanded(
+                  child: Center(
+                    child: Text('Name: $name',
+                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSize),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1),
+                  ),
+                ),
+                // Right: Marks input
                 SizedBox(
                   width: fieldWidth,
                   height: fieldHeight,
                   child: TextField(
-                    controller: marksControllers[subject],
+                    controller: marksControllers[subjects.first],
                     keyboardType: TextInputType.number,
                     style: TextStyle(fontSize: fontSize),
                     textAlign: TextAlign.center,
@@ -88,12 +84,65 @@ class StudentMarksRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: labelSpacing),
               ],
-            )),
-          ],
-        ),
-      ),
+            )
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('Roll:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSize, color: const Color(0xFF222B45))),
+                  SizedBox(width: labelSpacing),
+                  Text(roll, style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSize)),
+                  SizedBox(width: labelSpacing),
+                  Text('Name:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSize, color: const Color(0xFF222B45))),
+                  SizedBox(width: 4),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: isMobile ? 70 : 120),
+                    child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSize), overflow: TextOverflow.ellipsis, maxLines: 1),
+                  ),
+                  SizedBox(width: labelSpacing),
+                  ...subjects.map((subject) => Row(
+                        children: [
+                          Text('$subject:', style: TextStyle(color: const Color(0xFF5B8DEE), fontWeight: FontWeight.w600, fontSize: fontSize)),
+                          SizedBox(width: 6),
+                          SizedBox(
+                            width: fieldWidth,
+                            height: fieldHeight,
+                            child: TextField(
+                              controller: marksControllers[subject],
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(fontSize: fontSize),
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
+                                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.18)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
+                                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.18)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
+                                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.2),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: isMobile ? 8 : 10),
+                                isDense: true,
+                                hintText: '-',
+                                hintStyle: TextStyle(color: Colors.grey[400]),
+                                filled: true,
+                                fillColor: Theme.of(context).colorScheme.background,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: labelSpacing),
+                        ],
+                      )),
+                ],
+              ),
+            ),
     );
   }
 }
