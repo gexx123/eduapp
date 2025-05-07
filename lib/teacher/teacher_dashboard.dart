@@ -38,13 +38,20 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   @override
   void initState() {
     super.initState();
-    _initAsync();
-    _getTeacherName();
+    _fetchDashboardData();
     if (showJoinBanner) {
       Future.delayed(const Duration(seconds: 5), () {
         if (mounted) setState(() => showJoinBanner = false);
       });
     }
+  }
+
+  Future<void> _fetchDashboardData() async {
+    await Future.wait([
+      _initAsync(),
+      _getTeacherName(),
+    ]);
+    // Add any additional dashboard-wide fetches here if needed
   }
 
   Future<void> _getTeacherName() async {
@@ -385,45 +392,44 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body: RefreshIndicator(
+        onRefresh: _fetchDashboardData,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 28, vertical: isMobile ? 14 : 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: 18),
-              SummaryCard(
-                title: widget.schoolName,
-                value: 'School Code: ${widget.schoolCode}',
-                icon: Icons.school,
-                isMobile: isMobile,
-              ),
-              SizedBox(height: 18),
-              Row(
-                children: [
-                  InfoCard(label: 'Your Classes', icon: Icons.groups, value: '3', isMobile: isMobile),
-                  SizedBox(width: isMobile ? 6 : 18),
-                  InfoCard(label: 'Pending Tasks', icon: Icons.assignment, value: '2', isMobile: isMobile),
-                  SizedBox(width: isMobile ? 6 : 18),
-                  InfoCard(label: 'Due Dates', icon: Icons.calendar_today, value: '2', isMobile: isMobile),
-                ],
-              ),
-              SizedBox(height: 18),
-              _teacherTabBar(isMobile),
-              SizedBox(height: 10),
-              Builder(
-                builder: (context) {
-                  if (tabIndex == 0) {
-                    return _classesTab(isMobile);
-                  } else if (tabIndex == 1) {
-                    return _assignedTasksTab(isMobile);
-                  } else {
-                    return _marksUploadTab(isMobile);
-                  }
-                },
-              ),
-            ],
-          ),
+          children: [
+            SizedBox(height: 18),
+            SummaryCard(
+              title: widget.schoolName,
+              value: 'School Code: ${widget.schoolCode}',
+              icon: Icons.school,
+              isMobile: isMobile,
+            ),
+            SizedBox(height: 18),
+            Row(
+              children: [
+                InfoCard(label: 'Your Classes', icon: Icons.groups, value: '3', isMobile: isMobile),
+                SizedBox(width: isMobile ? 6 : 18),
+                InfoCard(label: 'Pending Tasks', icon: Icons.assignment, value: '2', isMobile: isMobile),
+                SizedBox(width: isMobile ? 6 : 18),
+                InfoCard(label: 'Due Dates', icon: Icons.calendar_today, value: '2', isMobile: isMobile),
+              ],
+            ),
+            SizedBox(height: 18),
+            _teacherTabBar(isMobile),
+            SizedBox(height: 10),
+            Builder(
+              builder: (context) {
+                if (tabIndex == 0) {
+                  return _classesTab(isMobile);
+                } else if (tabIndex == 1) {
+                  return _assignedTasksTab(isMobile);
+                } else {
+                  return _marksUploadTab(isMobile);
+                }
+              },
+            ),
+          ],
         ),
       ),
     );
