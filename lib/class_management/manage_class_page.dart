@@ -352,75 +352,120 @@ class _ManageClassPageState extends State<ManageClassPage> {
                     builder: (ctx) {
                       List<String> selectedSubjects = [];
                       return StatefulBuilder(
-                        builder: (context, setState) => AlertDialog(
-                          title: Text('Add Subject'),
-                          content: DropdownSearch<String>.multiSelection(
-                            items: [
-                              for (var group in subjectGroups) ...[
-                                '---${group['group']}---',
-                                ...List<String>.from(group['subjects']).where((subject) => !editableClass.subjects.contains(subject)),
-                              ]
-                            ],
-                            selectedItems: selectedSubjects,
-                            dropdownDecoratorProps: DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
-                                labelText: 'Select Subjects',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                filled: true,
-                                fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                        builder: (context, setState) {
+                          final isMobile = MediaQuery.of(context).size.width < 600;
+                          final dialogWidth = isMobile ? MediaQuery.of(context).size.width * 0.98 : 420.0;
+                          final dialogHeight = isMobile ? MediaQuery.of(context).size.height * 0.70 : 420.0;
+                          return Dialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            backgroundColor: Theme.of(context).dialogBackgroundColor,
+                            child: Container(
+                              width: dialogWidth,
+                              constraints: BoxConstraints(maxHeight: dialogHeight),
+                              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Add Subject', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 18 : 20)),
+                                  SizedBox(height: 18),
+                                  DropdownSearch<String>.multiSelection(
+                                    items: [
+                                      for (var group in subjectGroups) ...[
+                                        '---${group['group']}---',
+                                        ...List<String>.from(group['subjects']).where((subject) => !editableClass.subjects.contains(subject)),
+                                      ]
+                                    ],
+                                    selectedItems: selectedSubjects,
+                                    dropdownDecoratorProps: DropDownDecoratorProps(
+                                      dropdownSearchDecoration: InputDecoration(
+                                        labelText: 'Select Subjects',
+                                        prefixIcon: Icon(Icons.search),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                        filled: true,
+                                        fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                                      ),
+                                    ),
+                                    itemAsString: (item) => item.startsWith('---') ? '' : item,
+                                    enabled: true,
+                                    onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
+                                    dropdownBuilder: (context, selectedItems) {
+                                      final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
+                                      return filtered.isEmpty
+                                        ? Text('')
+                                        : Text(filtered.join(', '), 
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 15),
+                                        );
+                                    },
+                                    popupProps: PopupPropsMultiSelection.menu(
+                                      showSearchBox: true,
+                                      searchFieldProps: TextFieldProps(
+                                        decoration: InputDecoration(
+                                          hintText: 'Search subjects',
+                                          prefixIcon: Icon(Icons.search),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                        ),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.6 : 340,
+                                        minWidth: dialogWidth * 0.98,
+                                      ),
+                                      itemBuilder: (context, item, isSelected) => item.startsWith('---')
+                                        ? Container(
+                                            width: double.infinity,
+                                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                                              border: Border(
+                                                bottom: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              item.replaceAll('-', '').trim(),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                color: Theme.of(context).colorScheme.primary,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          )
+                                        : ListTile(
+                                            title: Text(item),
+                                            dense: true,
+                                            selected: isSelected,
+                                            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                                          ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 18),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+                                      SizedBox(width: 8),
+                                      ElevatedButton(
+                                        onPressed: selectedSubjects.isEmpty ? null : () {
+                                          Navigator.pop(ctx, selectedSubjects);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context).colorScheme.primary,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                          textStyle: TextStyle(fontWeight: FontWeight.bold),
+                                          elevation: 0,
+                                        ),
+                                        child: Text('Add'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            itemAsString: (item) => item.startsWith('---') ? '' : item,
-                            enabled: true,
-                            onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
-                            dropdownBuilder: (context, selectedItems) {
-                              final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
-                              return filtered.isEmpty
-                                ? Text('')
-                                : Text(filtered.join(', '), 
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 15),
-                                  );
-                            },
-                            popupProps: PopupPropsMultiSelection.menu(
-                              showSearchBox: true,
-                              itemBuilder: (context, item, isSelected) => item.startsWith('---')
-                                ? Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
-                                      border: Border(
-                                        bottom: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      item.replaceAll('-', '').trim(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Theme.of(context).colorScheme.primary,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  )
-                                : ListTile(
-                                    title: Text(item),
-                                    dense: true,
-                                    selected: isSelected,
-                                    selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                                  ),
-                            ),
-                          ),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
-                            ElevatedButton(
-                              onPressed: selectedSubjects.isEmpty ? null : () {
-                                Navigator.pop(ctx, selectedSubjects);
-                              },
-                              child: Text('Add'),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       );
                     },
                   );
