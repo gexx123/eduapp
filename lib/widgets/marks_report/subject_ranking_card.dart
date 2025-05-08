@@ -12,7 +12,7 @@ class SubjectRankingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 16),
+      padding: EdgeInsets.only(left: isMobile ? 14 : 0, right: 0, top: isMobile ? 8 : 16, bottom: isMobile ? 8 : 16),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -46,7 +46,7 @@ class SubjectRankingCard extends StatelessWidget {
               child: DataTable(
                 headingRowColor: MaterialStateProperty.all(Color(0xFFF4F4FD)),
                 columnSpacing: isMobile ? 14 : 32,
-                horizontalMargin: isMobile ? 10 : 28,
+                horizontalMargin: isMobile ? 18 : 28,
                 columns: [
                   DataColumn(label: Text('Rank', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1976D2)) )),
                   DataColumn(label: Text('Subject', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1976D2)) )),
