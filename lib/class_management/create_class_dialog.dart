@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:eduflow_flutter/services/firestore_service.dart';
 import 'package:eduflow_flutter/models/class.dart';
 import 'package:eduflow_flutter/models/student.dart';
+import 'package:eduflow_flutter/class_management/subject_groups.dart';
 
 /// Create Class Dialog
 /// Usage: showCreateClassDialog(context: context, ...);
@@ -16,54 +17,7 @@ Future<void> showCreateClassDialog({
   final _sectionController = TextEditingController();
   List<String> selectedSubjects = [];
   List<Map<String, dynamic>> students = [];
-   final List<Map<String, dynamic>> subjectGroups = [
-    {
-      'group': 'Sciences',
-      'subjects': [
-        'Mathematics', 'Applied Mathematics', 'Physics', 'Chemistry', 'Biology', 'Biotechnology', 'Computer Science',
-        'Information Practices', 'Environmental Science', 'Science', 'Home Science', 'Psychology',
-        'Geology', 'Agriculture', 'Electronics Technology'
-      ]
-    },
-    {
-      'group': 'Commerce',
-      'subjects': [
-        'Accountancy', 'Business Studies', 'Economics', 'Banking', 'Marketing', 'Entrepreneurship', 'Statistics',
-        'Taxation', 'Office Procedures & Practices', 'Secretarial Practice'
-      ]
-    },
-    {
-      'group': 'Languages',
-      'subjects': [
-        'English', 'Hindi', 'Sanskrit', 'Urdu', 'French', 'German', 'Spanish', 'Russian', 'Chinese',
-        'Assamese', 'Bengali', 'Gujarati', 'Kannada', 'Kashmiri', 'Malayalam', 'Manipuri', 'Marathi',
-        'Odia', 'Punjabi', 'Tamil', 'Telugu', 'Sindhi', 'Nepali', 'Bodo', 'Dogri', 'Garo', 'Khasi',
-        'Lepcha', 'Limboo', 'Mizo', 'Rajasthani', 'Santhali', 'Sherpa', 'Tibetan', 'Bhutia', 'Persian', 'Japanese',
-        'Maithili', 'Arabic'
-      ]
-    },
-    {
-      'group': 'Humanities',
-      'subjects': [
-        'History', 'Geography', 'Political Science', 'Sociology', 'Fine Arts', 'Legal Studies', 'Mass Media', 'Media Studies', 'Design',
-        'Philosophy', 'Library & Information Science'
-      ]
-    },
-    {
-      'group': 'Vocational/Professional',
-      'subjects': [
-        'Vocational Studies', 'Retail', 'Automobile', 'Health Care', 'Tourism', 'Web Application', 'Artificial Intelligence', 'Fashion Studies',
-        'Financial Market Management', 'IT/ITES', 'Beauty & Wellness', 'Food Production', 'Textile Design'
-      ]
-    },
-    {
-      'group': 'Other',
-      'subjects': [
-        'Music', 'Dance', 'Painting', 'Physical Education', 'Yoga', 'Other',
-        'General Studies', 'Work Experience', 'SUPW', 'NCC'
-      ]
-    },
-  ];
+
   final allSubjects = subjectGroups.expand((g) => g['subjects'] as List<String>).toList();
   String? schoolCode;
   final user = FirebaseAuth.instance.currentUser;
@@ -200,21 +154,22 @@ Future<void> showCreateClassDialog({
                         ),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon: Icon(Icons.book_rounded, color: Theme.of(context).colorScheme.primary),
                       ),
                     ),
+                    itemAsString: (item) => item.startsWith('---') ? '' : item,
+                    enabled: true,
+                    onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
+                    dropdownBuilder: (context, selectedItems) {
+                      final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
+                      return filtered.isEmpty
+                        ? Text('')
+                        : Text(filtered.join(', '), 
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 15),
+                          );
+                    },
                     popupProps: PopupPropsMultiSelection.menu(
                       showSearchBox: true,
-                      searchFieldProps: TextFieldProps(
-                        decoration: InputDecoration(
-                          hintText: 'Search subject...',
-                          prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                      ),
-                      showSelectedItems: true,
                       itemBuilder: (context, item, isSelected) => item.startsWith('---')
                         ? Container(
                             width: double.infinity,
@@ -240,33 +195,7 @@ Future<void> showCreateClassDialog({
                             selected: isSelected,
                             selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
                           ),
-                      containerBuilder: (context, popupWidget) => Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: popupWidget,
-                      ),
                     ),
-                    itemAsString: (item) => item.startsWith('---') ? '' : item,
-                    enabled: true,
-                    onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
-                    dropdownBuilder: (context, selectedItems) {
-                      final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
-                      return filtered.isEmpty
-                        ? Text('')
-                        : Text(filtered.join(', '), 
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 15),
-                          );
-                    },
                   ),
                   const SizedBox(height: 18),
                   Text('Add Students (Roll Number & Name)', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),

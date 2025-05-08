@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:eduflow_flutter/class_management/subject_groups.dart';
 
 /// Manage Class Dialog
 /// Usage: showManageClassDialog(context: context, ...);
@@ -21,48 +22,6 @@ Future<void> showManageClassDialog({
   List<String> selectedSubjects = List<String>.from(subjects);
   List<Map<String, dynamic>> studentList = List<Map<String, dynamic>>.from(students);
   Map<String, dynamic> subjectTeacherMap = Map<String, dynamic>.from(subjectTeachers);
-  final List<Map<String, dynamic>> subjectGroups = [
-    {
-      'group': 'Languages',
-      'subjects': [
-        'English', 'Hindi', 'Sanskrit', 'Urdu', 'French', 'German', 'Spanish', 'Russian', 'Chinese',
-        'Assamese', 'Bengali', 'Gujarati', 'Kannada', 'Kashmiri', 'Malayalam', 'Manipuri', 'Marathi',
-        'Odia', 'Punjabi', 'Tamil', 'Telugu', 'Sindhi', 'Nepali', 'Bodo', 'Dogri', 'Garo', 'Khasi',
-        'Lepcha', 'Limboo', 'Mizo', 'Rajasthani', 'Santhali', 'Sherpa', 'Tibetan', 'Bhutia', 'Persian', 'Japanese'
-      ]
-    },
-    {
-      'group': 'Sciences',
-      'subjects': [
-        'Mathematics', 'Applied Mathematics', 'Physics', 'Chemistry', 'Biology', 'Biotechnology', 'Computer Science',
-        'Information Practices', 'Environmental Science', 'Science', 'Home Science', 'Psychology'
-      ]
-    },
-    {
-      'group': 'Commerce',
-      'subjects': [
-        'Accountancy', 'Business Studies', 'Economics', 'Banking', 'Marketing', 'Entrepreneurship', 'Statistics'
-      ]
-    },
-    {
-      'group': 'Humanities',
-      'subjects': [
-        'History', 'Geography', 'Political Science', 'Sociology', 'Fine Arts', 'Legal Studies', 'Mass Media', 'Media Studies', 'Design'
-      ]
-    },
-    {
-      'group': 'Vocational/Professional',
-      'subjects': [
-        'Vocational Studies', 'Retail', 'Automobile', 'Health Care', 'Tourism', 'Web Application', 'Artificial Intelligence', 'Fashion Studies'
-      ]
-    },
-    {
-      'group': 'Other',
-      'subjects': [
-        'Music', 'Dance', 'Painting', 'Physical Education', 'Yoga', 'Other'
-      ]
-    },
-  ];
   final allSubjects = subjectGroups.expand((g) => g['subjects'] as List<String>).toList();
   await showDialog(
     context: context,
@@ -135,23 +94,63 @@ Future<void> showManageClassDialog({
                 ),
                 const SizedBox(height: 16),
                 DropdownSearch<String>.multiSelection(
-                  items: allSubjects,
+                  items: [
+                    '---Selected Subjects---',
+                    ...selectedSubjects,
+                    for (var group in subjectGroups) ...[
+                      '---${group['group']}---',
+                      ...List<String>.from(group['subjects']).where((subject) => !selectedSubjects.contains(subject)),
+                    ]
+                  ],
                   selectedItems: selectedSubjects,
                   dropdownDecoratorProps: DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
-                      labelText: 'Subjects Taught in This Class',
+                      labelText: 'Subjects',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                     ),
                   ),
+                  itemAsString: (item) => item.startsWith('---') ? '' : item,
+                  enabled: true,
+                  onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
+                  dropdownBuilder: (context, selectedItems) {
+                    final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
+                    return filtered.isEmpty
+                      ? Text('')
+                      : Text(filtered.join(', '), 
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 15),
+                        );
+                  },
                   popupProps: PopupPropsMultiSelection.menu(
                     showSearchBox: true,
-                    searchFieldProps: TextFieldProps(
-                      decoration: InputDecoration(hintText: 'Search subject...'),
-                    ),
+                    itemBuilder: (context, item, isSelected) => item.startsWith('---')
+                      ? Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                            border: Border(
+                              bottom: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+                            ),
+                          ),
+                          child: Text(
+                            item.replaceAll('-', '').trim(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      : ListTile(
+                          title: Text(item),
+                          dense: true,
+                          selected: isSelected,
+                          selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                        ),
                   ),
-                  onChanged: (vals) => setState(() => selectedSubjects = vals),
                 ),
                 const SizedBox(height: 18),
                 Text('Assign Teachers to Subjects', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),

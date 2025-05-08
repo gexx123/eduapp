@@ -7,6 +7,8 @@ import '../services/firestore_service.dart';
 import 'package:flutter/services.dart';
 import 'assign_teacher_dialog.dart';
 import 'upload_marks_page.dart';
+import 'package:eduflow_flutter/class_management/subject_groups.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 /// Page for main/class teacher to manage their class details and assign subject teachers.
 class ManageClassPage extends StatefulWidget {
@@ -344,45 +346,96 @@ class _ManageClassPageState extends State<ManageClassPage> {
                   elevation: 0,
                 ),
                 onPressed: () async {
-                  final allSubjects = ['English', 'Hindi', 'Maths', 'Science', 'Social', 'Urdu', 'Sanskrit', 'Sindhi', 'Nepali'];
-                  final available = allSubjects.where((s) => !editableClass.subjects.contains(s)).toList();
-                  String? selected;
-                  await showDialog(
+                  final availableSubjects = subjectGroups.expand((g) => g['subjects'] as List<String>).where((s) => !editableClass.subjects.contains(s)).toList();
+                  final result = await showDialog(
                     context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text('Add Subject'),
-                      content: DropdownButton<String>(
-                        value: selected,
-                        hint: Text('Select Subject'),
-                        isExpanded: true,
-                        items: available.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                        onChanged: (val) {
-                          selected = val;
-                          (ctx as Element).markNeedsBuild();
-                        },
-                      ),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
-                        ElevatedButton(
-                          onPressed: selected == null ? null : () {
-                            final newSubjects = List<String>.from(editableClass.subjects)..add(selected!);
-                            setState(() {
-                              editableClass = SchoolClass(
-                                className: editableClass.className,
-                                section: editableClass.section,
-                                subjects: newSubjects,
-                                students: editableClass.students,
-                                subjectTeachers: subjectTeachers,
-                                classTeacherName: editableClass.classTeacherName,
-                              );
-                            });
-                            Navigator.pop(ctx);
-                          },
-                          child: Text('Add'),
+                    builder: (ctx) {
+                      List<String> selectedSubjects = [];
+                      return StatefulBuilder(
+                        builder: (context, setState) => AlertDialog(
+                          title: Text('Add Subject'),
+                          content: DropdownSearch<String>.multiSelection(
+                            items: [
+                              for (var group in subjectGroups) ...[
+                                '---${group['group']}---',
+                                ...List<String>.from(group['subjects']).where((subject) => !editableClass.subjects.contains(subject)),
+                              ]
+                            ],
+                            selectedItems: selectedSubjects,
+                            dropdownDecoratorProps: DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: 'Select Subjects',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                filled: true,
+                                fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                              ),
+                            ),
+                            itemAsString: (item) => item.startsWith('---') ? '' : item,
+                            enabled: true,
+                            onChanged: (vals) => setState(() => selectedSubjects = vals.where((e) => !e.startsWith('---')).toList()),
+                            dropdownBuilder: (context, selectedItems) {
+                              final filtered = selectedItems.where((e) => !e.startsWith('---')).toList();
+                              return filtered.isEmpty
+                                ? Text('')
+                                : Text(filtered.join(', '), 
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 15),
+                                  );
+                            },
+                            popupProps: PopupPropsMultiSelection.menu(
+                              showSearchBox: true,
+                              itemBuilder: (context, item, isSelected) => item.startsWith('---')
+                                ? Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                                      border: Border(
+                                        bottom: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      item.replaceAll('-', '').trim(),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context).colorScheme.primary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  )
+                                : ListTile(
+                                    title: Text(item),
+                                    dense: true,
+                                    selected: isSelected,
+                                    selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                                  ),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel')),
+                            ElevatedButton(
+                              onPressed: selectedSubjects.isEmpty ? null : () {
+                                Navigator.pop(ctx, selectedSubjects);
+                              },
+                              child: Text('Add'),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
+                  if (result is List<String> && result.isNotEmpty) {
+                    setState(() {
+                      editableClass = SchoolClass(
+                        className: editableClass.className,
+                        section: editableClass.section,
+                        subjects: [...editableClass.subjects, ...result],
+                        students: editableClass.students,
+                        subjectTeachers: subjectTeachers,
+                        classTeacherName: editableClass.classTeacherName,
+                      );
+                    });
+                  }
                 },
               ),
             ),
@@ -413,21 +466,6 @@ class _ManageClassPageState extends State<ManageClassPage> {
                         classTeacherName: editableClass.classTeacherName,
                       );
                     });
-                    _firestoreService.saveClassWithCreator(
-                      widget.schoolCode,
-                      editableClass,
-                      FirebaseAuth.instance.currentUser!.uid,
-                      editableClass.classTeacherName ?? '',
-                      docId: '${editableClass.className}_${editableClass.section}',
-                    );
-                    // Save to student_master
-                    _firestoreService.saveStudents(
-                      widget.schoolCode,
-                      '${editableClass.className}_${editableClass.section}',
-                      newStudents.cast<Map<String, dynamic>>()
-                            .map((s) => Student(name: s['name'], roll: s['roll']))
-                            .toList(),
-                    );
                   },
                 ),
               ),
@@ -475,21 +513,6 @@ class _ManageClassPageState extends State<ManageClassPage> {
                                   classTeacherName: editableClass.classTeacherName,
                                 );
                               });
-                              await _firestoreService.saveClassWithCreator(
-                                widget.schoolCode,
-                                editableClass,
-                                FirebaseAuth.instance.currentUser!.uid,
-                                editableClass.classTeacherName ?? '',
-                                docId: '${editableClass.className}_${editableClass.section}',
-                              );
-                              // Save to student_master
-                              await _firestoreService.saveStudents(
-                                widget.schoolCode,
-                                '${editableClass.className}_${editableClass.section}',
-                                studentList.cast<Map<String, dynamic>>()
-                                  .map((s) => Student(name: s['name'], roll: s['roll']))
-                                  .toList(),
-                              );
                             }
                             Navigator.pop(ctx);
                           },
