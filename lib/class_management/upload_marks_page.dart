@@ -5,6 +5,9 @@ import '../services/firestore_service.dart';
 import '../models/student.dart';
 import '../widgets/upload_marks/student_marks_row.dart';
 import '../widgets/upload_marks/out_of_marks_row.dart';
+import '../widgets/notify_assign_teacher_dialog.dart';
+import 'manage_class_page.dart';
+import '../models/class.dart';
 
 /// UploadMarksPage: Allows teachers to enter and upload marks for a class & exam
 class UploadMarksPage extends StatefulWidget {
@@ -34,6 +37,59 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
   Map<String, Map<String, TextEditingController>> marksControllers = {};
   List<String> subjects = [];
   Map<String, dynamic> subjectTeachers = {};
+  Future<void> _checkTeachersAssignedAndProceed() async {
+    setState(() => loading = true);
+    final classDoc = await FirebaseFirestore.instance
+        .collection('school_classes')
+        .doc(widget.schoolCode)
+        .collection('classesData')
+        .doc(widget.classId)
+        .get();
+    Map<String, dynamic> liveSubjectTeachers = {};
+    List<String> liveSubjects = [];
+    if (classDoc.exists && classDoc.data() != null) {
+      liveSubjectTeachers = Map<String, dynamic>.from(classDoc.data()!['subjectTeachers'] ?? {});
+      liveSubjects = List<String>.from(classDoc.data()!['subjects'] ?? []);
+    }
+    bool hasUnassigned = liveSubjects.isEmpty || liveSubjects.any((s) => liveSubjectTeachers[s] == null || (liveSubjectTeachers[s] as String).trim().isEmpty);
+    // Always fetch students to keep them in memory
+    final doc = await FirebaseFirestore.instance
+        .collection('student_master')
+        .doc(widget.schoolCode)
+        .collection(widget.classId)
+        .doc('students')
+        .get();
+    final data = doc.data();
+    if (data != null && data['students'] != null) {
+      students = List<Map<String, dynamic>>.from(data['students']);
+    } else {
+      students = [];
+    }
+    setState(() => loading = false);
+    if (hasUnassigned) {
+      final goToAssign = await showNotifyAssignTeacherDialog(context);
+      if (goToAssign == true) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => ManageClassPage(
+              schoolClass: SchoolClass(
+                className: widget.className,
+                section: widget.section,
+                subjects: liveSubjects,
+                students: students,
+                subjectTeachers: liveSubjectTeachers,
+                classTeacherName: null,
+              ),
+              schoolCode: widget.schoolCode,
+            ),
+          ),
+        );
+      }
+    } else {
+      // Proceed to normal context fetch and UI
+      await _fetchUserAndClassContext();
+    }
+  }
   String? teacherName;
   String? userRole;
   Map<String, TextEditingController> outOfControllers = {};
@@ -55,7 +111,7 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
   @override
   void initState() {
     super.initState();
-    _fetchUserAndClassContext();
+    _checkTeachersAssignedAndProceed();
   }
 
   Future<void> _fetchUserAndClassContext() async {
