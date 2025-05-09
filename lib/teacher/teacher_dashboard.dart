@@ -551,7 +551,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                           },
                           icon: Icon(Icons.edit, size: isMobile ? 18 : 20),
                           label: Text(
-                            'Manage Your Class',
+                            'Your Class',
                             style: TextStyle(fontSize: isMobile ? 13 : 14),
                           ),
                           style: ElevatedButton.styleFrom(

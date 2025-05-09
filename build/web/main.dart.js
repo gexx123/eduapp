@@ -54100,7 +54100,7 @@ if(k==null||J.eD(k))return A.bw(l,l,B.Q,l,l,l,l,l,l,l,l,l)
 k=this.b
 s=k?12:0
 r=A.bO(B.Us,l,l,k?18:20)
-q=A.t("Manage Your Class",l,l,l,l,A.O(l,l,l,l,l,l,l,l,l,l,l,k?13:14,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l)
+q=A.t("Your Class",l,l,l,l,A.O(l,l,l,l,l,l,l,l,l,l,l,k?13:14,l,l,l,l,l,!0,l,l,l,l,l,l,l,l),l,l)
 p=A.W(4279858898)
 o=A.ar(8)
 n=A.aE(51,B.F.D()>>>16&255,B.F.D()>>>8&255,B.F.D()&255)
