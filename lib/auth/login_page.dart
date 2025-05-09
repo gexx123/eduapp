@@ -8,8 +8,30 @@ import '../dashboard/parent_dashboard.dart';
 import '../principal/create_school_page.dart';
 import '../teacher/teacher_dashboard.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +39,7 @@ class LoginPage extends StatelessWidget {
     final isMobile = width < 600;
     final horizontalPad = isMobile ? 12.0 : 0.0;
     final cardPad = isMobile ? 18.0 : 32.0;
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FC),
       body: Center(

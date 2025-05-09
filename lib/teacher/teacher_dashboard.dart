@@ -356,7 +356,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                               Navigator.of(context).pop();
                               await Future.delayed(Duration(milliseconds: 100));
                               await FirebaseAuth.instance.signOut();
-                              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                              Navigator.of(context).pushNamedAndRemoveUntil('/landing', (route) => false);
                             },
                             child: Text('Log Out', style: TextStyle(color: Colors.red)),
                           ),

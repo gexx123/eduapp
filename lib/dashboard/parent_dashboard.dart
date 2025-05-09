@@ -96,7 +96,7 @@ class ParentDashboard extends StatelessWidget {
                           try {
                             await FirebaseAuth.instance.signOut();
                           } catch (_) {}
-                          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                          Navigator.of(context).pushNamedAndRemoveUntil('/landing', (route) => false);
                         },
                         child: Text('Log Out', style: TextStyle(color: Colors.red)),
                       ),
