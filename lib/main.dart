@@ -14,10 +14,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Persist auth state on web
-  if (kIsWeb) {
-    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
-  }
+  // Persist auth state on all platforms
+  await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
   runApp(const ProviderScope(child: EduFlowApp()));
 }
 
