@@ -4,9 +4,10 @@ import 'firebase_options.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'landing_page.dart';
 // import 'auth/login_page.dart';
-// import 'services/firebase_service.dart';
+import 'services/firebase_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'root_page.dart';
 
 void main() async {
@@ -14,13 +15,23 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Persist auth state on all platforms
-  await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
-  runApp(const ProviderScope(child: EduFlowApp()));
+  
+  // Configure Firebase persistence based on platform
+  if (kIsWeb) {
+    // For web, explicitly set persistence to LOCAL
+    await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+  }
+  
+  // Initialize shared preferences for additional auth state persistence
+  final prefs = await SharedPreferences.getInstance();
+  
+  runApp(ProviderScope(child: EduFlowApp(prefs: prefs)));
 }
 
 class EduFlowApp extends StatelessWidget {
-  const EduFlowApp({super.key});
+  final SharedPreferences prefs;
+  
+  const EduFlowApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +41,7 @@ class EduFlowApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const RootPage(),
+      home: RootPage(prefs: prefs),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -140,102 +140,43 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           onPressed: () async {
                             try {
-                              final userCredential = await FirebaseService.auth.signInWithEmailAndPassword(
+                              // Show loading indicator
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                              
+                              // Attempt to sign in
+                              await FirebaseService.auth.signInWithEmailAndPassword(
                                 email: emailController.text.trim(),
                                 password: passwordController.text.trim(),
                               );
-                              if (userCredential.user != null) {
-                                // Fetch user role from Firestore
-                                final userDoc = await FirebaseService.firestore
-                                    .collection('users')
-                                    .doc(userCredential.user!.uid)
-                                    .get();
-                                final data = userDoc.data();
-                                if (data != null && data['role'] != null) {
-                                  final role = data['role'];
-                                  if (role == 'principal') {
-                                    // If principal has schoolCode, route to dashboard, else to CreateSchoolPage
-                                    final schoolCode = data['schoolCode'];
-                                    final schoolName = data['schoolName'];
-                                    if (schoolCode != null && schoolName != null) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PrincipalDashboardPage(
-                                            schoolName: schoolName,
-                                            schoolCode: schoolCode,
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CreateSchoolPage(),
-                                        ),
-                                      );
-                                    }
-                                  } else if (role == 'teacher') {
-                                    // --- FIX: Check if teacher already has schoolCode and name ---
-                                    final uid = userCredential.user!.uid;
-                                    final userSnap = await FirebaseService.firestore.collection('users').doc(uid).get();
-                                    final userData = userSnap.data() ?? {};
-                                    final schoolCode = userData['schoolCode'];
-                                    final schoolName = userData['schoolName'];
-                                    final gmDoc = await FirebaseService.firestore.collection('group_member').where('userId', isEqualTo: uid).limit(1).get();
-                                    final gmData = gmDoc.docs.isNotEmpty ? gmDoc.docs.first.data() : null;
-                                    final hasName = gmData != null && (gmData['name'] ?? '').toString().trim().isNotEmpty;
-                                    final hasSchoolCode = gmData != null && (gmData['schoolCode'] ?? '').toString().trim().isNotEmpty;
-                                    final userHasSchool = (schoolCode ?? '').toString().trim().isNotEmpty;
-                                    if (hasName && hasSchoolCode && userHasSchool && schoolName != null) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => TeacherDashboardPage(schoolName: schoolName, schoolCode: schoolCode),
-                                        ),
-                                      );
-                                    } else {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => JoinSchoolPage(role: 'teacher'),
-                                        ),
-                                      );
-                                    }
-                                  } else if (role == 'parent') {
-                                    // Fetch parent school info from group_member
-                                    final uid = userCredential.user!.uid;
-                                    final gmDoc = await FirebaseService.firestore.collection('group_member').where('userId', isEqualTo: uid).limit(1).get();
-                                    final gmData = gmDoc.docs.isNotEmpty ? gmDoc.docs.first.data() : null;
-                                    final schoolCode = gmData != null ? gmData['schoolCode'] ?? '' : '';
-                                    final schoolName = gmData != null ? gmData['schoolName'] ?? '' : '';
-                                    if (schoolCode.toString().isNotEmpty && schoolName.toString().isNotEmpty) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ParentDashboard(schoolName: schoolName, schoolCode: schoolCode),
-                                        ),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('School info missing for parent account. Please contact school admin.')),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Unknown role: $role')),
-                                    );
-                                  }
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('User role not set. Please complete registration.')),
-                                  );
-                                }
+                              
+                              // Close loading dialog
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
                               }
+                              
+                              // Let the RootPage handle navigation based on auth state
+                              // This is key to fixing the persistence issue
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                              }
+                              
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Login failed: $e')),
-                              );
+                              // Close loading dialog if it's showing
+                              if (context.mounted) {
+                                Navigator.of(context, rootNavigator: true).pop();
+                              }
+                              
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Login failed: $e')),
+                                );
+                              }
                             }
                           },
                           child: const Text('Sign In'),
