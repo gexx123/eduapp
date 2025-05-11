@@ -3,6 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import '../onboarding/teacher_onboarding_dialog.dart';
+import 'widgets/teacher_dashboard_header.dart';
+import 'widgets/teacher_quick_actions.dart';
+import 'widgets/teacher_dashboard_tabbar.dart';
+import 'widgets/teacher_classes_overview.dart';
+import 'widgets/teacher_tasks_panel.dart';
+import 'widgets/teacher_marks_panel.dart';
 import '../class_management/manage_class_dialog.dart';
 import '../class_management/create_class_dialog.dart';
 import '../class_management/manage_class_page.dart';
@@ -33,6 +39,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   bool _onboardingChecked = false;
   final FirestoreService _firestoreService = FirestoreService();
   bool isClassCreated = false;
+  bool isClassTeacher = false;
   String? teacherName;
 
   @override
@@ -59,8 +66,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     if (uid == null) return;
     final gmDoc = await FirebaseFirestore.instance.collection('group_member').where('userId', isEqualTo: uid).limit(1).get();
     if (gmDoc.docs.isNotEmpty) {
+      final data = gmDoc.docs.first.data();
       setState(() {
-        teacherName = gmDoc.docs.first['name'];
+        teacherName = data['name'];
+        isClassTeacher = (data['isClassTeacher'] ?? false) == true;
       });
     }
   }
@@ -163,6 +172,12 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
         );
         await _firestoreService.saveClassWithCreator(schoolCode, newClass, uid, teacherName);
         await _firestoreService.setUserClassCreated(uid, true);
+        // Set classAssigned in group_member
+        await FirebaseFirestore.instance.collection('group_member').where('userId', isEqualTo: uid).limit(1).get().then((snap) {
+          if (snap.docs.isNotEmpty) {
+            snap.docs.first.reference.set({'classAssigned': '${newClass.className}_${newClass.section}'}, SetOptions(merge: true));
+          }
+        });
         setState(() {
           isClassCreated = true;
         });
@@ -179,63 +194,40 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     // Fetch teacher's group_member doc
     final gmDoc = await FirebaseFirestore.instance.collection('group_member').where('userId', isEqualTo: uid).limit(1).get();
     if (gmDoc.docs.isEmpty) return;
-    final classAssigned = gmDoc.docs.first['classAssigned'];
-    final schoolCode = gmDoc.docs.first['schoolCode'];
-    if (classAssigned == null || classAssigned.toString().trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No class assigned to you.')));
+    final docData = gmDoc.docs.first.data();
+    final classAssigned = docData.containsKey('classAssigned') ? docData['classAssigned'] : null;
+    final schoolCode = docData['schoolCode'];
+    String? classToManage = classAssigned;
+    // If classAssigned is missing, try to find a class created by this teacher
+    if (classToManage == null || classToManage.toString().trim().isEmpty) {
+      final classesSnap = await FirebaseFirestore.instance
+          .collection('school_classes')
+          .doc(schoolCode)
+          .collection('classesData')
+          .where('createdBy', isEqualTo: uid)
+          .limit(1)
+          .get();
+      if (classesSnap.docs.isNotEmpty) {
+        classToManage = classesSnap.docs.first.id; // use the doc ID, which is className_section
+      }
+    }
+    if (classToManage == null || classToManage.toString().trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No class assigned or created by you.')));
       return;
     }
     // Use FirestoreService to fetch class
-    final schoolClass = await _firestoreService.getClass(schoolCode, classAssigned);
+    final schoolClass = await _firestoreService.getClass(schoolCode, classToManage);
     if (schoolClass == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Class not found.')));
       return;
     }
-    final _classNameController = TextEditingController(text: schoolClass.className);
-    final _sectionController = TextEditingController(text: schoolClass.section);
-    List<String> selectedSubjects = List<String>.from(schoolClass.subjects);
-    List<Student> students = schoolClass.students.map((s) => Student.fromMap(s)).toList();
-    Map<String, dynamic> subjectTeachers = schoolClass.subjectTeachers ?? {};
-    // Fetch all teachers in this school (direct Firestore call retained for group_member lookup)
-    final teachersSnap = await FirebaseFirestore.instance.collection('group_member')
-      .where('schoolCode', isEqualTo: schoolCode)
-      .where('role', isEqualTo: 'teacher')
-      .get();
-    final teacherOptions = teachersSnap.docs.map((doc) => {
-      'uid': doc['userId'],
-      'name': doc['name'],
-      'subject': doc['subject'] ?? '',
-    }).toList();
-    await showManageClassDialog(
-      context: context,
-      schoolCode: schoolCode,
-      className: _classNameController.text,
-      section: _sectionController.text,
-      subjects: selectedSubjects,
-      students: students.map((s) => s.toMap()).toList(),
-      subjectTeachers: subjectTeachers,
-      teacherOptions: teacherOptions,
-      onSave: (updatedStudents, updatedSubjects, updatedSubjectTeachers) async {
-        // Fetch teacher name from group_member
-        final gmDoc = await FirebaseFirestore.instance.collection('group_member').where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid).limit(1).get();
-        final teacherName = gmDoc.docs.isNotEmpty ? gmDoc.docs.first['name'] ?? '' : '';
-        // Save changes via FirestoreService
-        final updatedClass = SchoolClass(
-          className: _classNameController.text,
-          section: _sectionController.text,
-          subjects: updatedSubjects,
-          students: updatedStudents,
-          subjectTeachers: updatedSubjectTeachers,
-        );
-        await _firestoreService.saveClassWithCreator(schoolCode, updatedClass, FirebaseAuth.instance.currentUser!.uid, teacherName);
-        await _firestoreService.setUserClassCreated(FirebaseAuth.instance.currentUser!.uid, true);
-        setState(() {
-          isClassCreated = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Class updated successfully!')),
-        );
-      },
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ManageClassPage(
+          schoolClass: schoolClass,
+          schoolCode: schoolCode,
+        ),
+      ),
     );
   }
 
@@ -252,6 +244,14 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     }
   }
 
+  void _handleLogout() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/landing', (route) => false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -265,132 +265,12 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     }
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FC),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 36, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1.2)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: Text(
-                      teacherName != null ? teacherName![0].toUpperCase() : '-',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    teacherName ?? 'Teacher',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(width: 16),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFF4F4FD),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      children: [
-                        Text('School Code: ', style: TextStyle(fontSize: isMobile ? 11 : 13, color: Colors.black54)),
-                        SelectableText(widget.schoolCode, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 11 : 13, color: Color(0xFF1976D2))),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              PopupMenuButton<String>(
-                icon: Icon(Icons.account_circle, color: Colors.blueGrey, size: 28),
-                onSelected: (value) async {
-                  if (value == 'profile') {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Profile'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('User Name:'),
-                            SizedBox(height: 4),
-                            Text(teacherName ?? 'Teacher', style: TextStyle(fontWeight: FontWeight.bold)),
-                            SizedBox(height: 12),
-                            Text('School:'),
-                            SizedBox(height: 4),
-                            Text(widget.schoolName, style: TextStyle(fontWeight: FontWeight.bold)),
-                            SizedBox(height: 12),
-                            Text('School Code:'),
-                            SizedBox(height: 4),
-                            Text(widget.schoolCode, style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  } else if (value == 'logout') {
-                    await showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Log Out'),
-                        content: Text('Are you sure you want to log out?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              await Future.delayed(Duration(milliseconds: 100));
-                              await FirebaseAuth.instance.signOut();
-                              Navigator.of(context).pushNamedAndRemoveUntil('/landing', (route) => false);
-                            },
-                            child: Text('Log Out', style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'profile',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person, color: Colors.blueGrey, size: 20),
-                        SizedBox(width: 8),
-                        Text('Profile'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout, color: Colors.redAccent, size: 20),
-                        SizedBox(width: 8),
-                        Text('Log Out'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      appBar: TeacherDashboardHeader(
+        teacherName: teacherName ?? '',
+        schoolName: widget.schoolName,
+        schoolCode: widget.schoolCode,
+        isMobile: isMobile,
+        onLogout: _handleLogout,
       ),
       body: RefreshIndicator(
         onRefresh: _fetchDashboardData,
@@ -436,165 +316,37 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   }
 
   Widget _teacherTabBar(bool isMobile) {
-    final tabs = ['Classes & Marks', 'Assigned Tasks', 'Question Papers'];
-    return Container(
-      margin: EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: List.generate(tabs.length, (i) {
-          final selected = i == tabIndex;
-          return Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: selected ? Colors.white : Colors.transparent,
-                foregroundColor: selected ? Color(0xFF1976D2) : Colors.black87,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 15),
-              ),
-              onPressed: () => setState(() => tabIndex = i),
-              child: Text(tabs[i]),
-            ),
-          );
-        }),
-      ),
-    );
-  }
+  return TeacherDashboardTabBar(
+    tabIndex: tabIndex,
+    onTabChanged: (i) => setState(() => tabIndex = i),
+    isMobile: isMobile,
+  );
+}
 
   Widget _assignedTasksTab(bool isMobile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 18),
-        Text('Tasks from Principal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 17 : 22)),
-        SizedBox(height: 12),
-        TaskCard(
-          title: 'Submit Annual Lesson Plans',
-          due: 'Due: 6/15/2023 · Type: Lesson Plan',
-          description: 'All teachers need to submit their annual lesson plans for review',
-          status: 'In Progress',
-          statusColor: Color(0xFF1565C0),
-          priority: 'High Priority',
-          priorityColor: Color(0xFFFDE7E7),
-          priorityTextColor: Color(0xFFD32F2F),
-          onViewDetails: () {},
-          onUpdateStatus: () {},
-        ),
-        SizedBox(height: 18),
-        TaskCard(
-          title: 'Mid-Term Assessment Reports',
-          due: 'Due: 6/30/2023 · Type: Assessment',
-          description: 'Complete mid-term assessment reports for all classes',
-          status: 'Pending',
-          statusColor: Color(0xFFF9A825),
-          priority: 'Medium Priority',
-          priorityColor: Color(0xFFFFF8E1),
-          priorityTextColor: Color(0xFFFBC02D),
-          onViewDetails: () {},
-          onUpdateStatus: () {},
-        ),
-      ],
-    );
-  }
+  return TeacherTasksPanel(isMobile: isMobile);
+}
 
   Widget _classesTab(bool isMobile) {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    final schoolCode = widget.schoolCode;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 18),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Classes & Student Marks', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 17 : 22)),
-                SizedBox(height: 2),
-                Text('Manage your classes and upload student marks', style: TextStyle(color: Colors.black54, fontSize: isMobile ? 12 : 14)),
-              ],
-            ),
-            // Show Manage button only if at least one class is assigned AND user is a class teacher
-            if (teacherName != null)
-              FutureBuilder<Map<String, dynamic>>(
-                future: FirestoreService().getTeacherOnboardingStatus(uid ?? ''),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData || snapshot.data == null) return Container();
-                  final onboarding = snapshot.data!;
-                  final isClassCreated = onboarding['isClassCreated'] == true;
-                  if (!isClassCreated) return Container();
-                  return StreamBuilder<List<SchoolClass>>(
-                    stream: FirestoreService().getClassesForTeacher(schoolCode, uid ?? '', teacherName: teacherName),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Container();
-                      }
-                      return Container(
-                        margin: EdgeInsets.only(top: isMobile ? 12 : 0),
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Fix: Use classTeacherName for main teacher check, and pass SchoolClass to ManageClassPage
-                            final mainClass = snapshot.data!.firstWhere(
-                              (c) => c.classTeacherName == teacherName,
-                              orElse: () => snapshot.data!.first,
-                            );
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ManageClassPage(
-                                  schoolCode: widget.schoolCode,
-                                  schoolClass: mainClass,
-                                ),
-                              ),
-                            );
-                          },
-                          icon: Icon(Icons.edit, size: isMobile ? 18 : 20),
-                          label: Text(
-                            'Your Class',
-                            style: TextStyle(fontSize: isMobile ? 13 : 14),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF1976D2),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isMobile ? 12 : 18,
-                              vertical: isMobile ? 10 : 12,
-                            ),
-                            elevation: 2,
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-          ],
-        ),
-        SizedBox(height: 18),
-        // Show classes assigned to or created by the teacher
-        StreamBuilder<List<SchoolClass>>(
-          stream: FirestoreService().getClassesForTeacher(schoolCode, uid ?? '', teacherName: teacherName),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
-            }
-            final classes = snapshot.data!;
-            if (classes.isEmpty) {
-              return Center(child: Text('No classes assigned.'));
-            }
-            return Column(
-              children: classes.map((c) => _classCard(c)).toList(),
-            );
-          },
-        ),
-      ],
-    );
-  }
+  return TeacherClassesOverview(
+    schoolCode: widget.schoolCode,
+    teacherName: teacherName,
+    isMobile: isMobile,
+    onManageClass: isClassTeacher && isClassCreated ? _showManageClassDialog : null,
+    classListBuilder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return Center(child: CircularProgressIndicator());
+      }
+      final classes = snapshot.data!;
+      if (classes.isEmpty) {
+        return Center(child: Text('No classes assigned.'));
+      }
+      return Column(
+        children: classes.map((c) => _classCard(c)).toList(),
+      );
+    },
+  );
+}
 
   Widget _classCard(SchoolClass schoolClass) {
     final classId = '${schoolClass.className}_${schoolClass.section}';
@@ -692,32 +444,6 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   }
 
   Widget _marksUploadTab(bool isMobile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 18),
-        Text('Question Papers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 17 : 22)),
-        SizedBox(height: 2),
-        Text('View and customize question papers', style: TextStyle(color: Colors.black54, fontSize: isMobile ? 12 : 14)),
-        SizedBox(height: 10),
-        Text(
-          'Access question papers created by your principal. You can view, edit, and select questions for your exams.',
-          style: TextStyle(color: Colors.black87, fontSize: isMobile ? 12 : 14),
-        ),
-        SizedBox(height: 18),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: 24, horizontal: 18),
-          decoration: BoxDecoration(
-            color: Color(0xFFF7F9FC),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Center(
-            child: Text('No question papers available yet', style: TextStyle(color: Colors.black54, fontSize: 15)),
-          ),
-        ),
-      ],
-    );
-  }
+  return TeacherMarksPanel(isMobile: isMobile);
+}
 }
