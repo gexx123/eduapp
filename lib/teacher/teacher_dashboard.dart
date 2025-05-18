@@ -350,72 +350,134 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
 
   Widget _classCard(SchoolClass schoolClass) {
     final classId = '${schoolClass.className}_${schoolClass.section}';
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 18, horizontal: 18),
-      margin: EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${schoolClass.className} - ${schoolClass.section}', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('${schoolClass.students.length} students', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-            ],
-          ),
-          Row(
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  _showExamSelectionDialog(classId, schoolClass.className, schoolClass.section);
-                },
-                icon: Icon(Icons.file_upload_outlined, size: 16),
-                label: Text('Upload Marks'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF5B8DEE),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ViewMarksReportPage(
-                        schoolCode: widget.schoolCode,
-                        classId: classId,
-                        className: schoolClass.className,
-                        section: schoolClass.section,
-                      ),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth <= 360;
+    final isMobile = screenWidth < 700;
+    final cardPadding = isNarrow
+        ? EdgeInsets.symmetric(vertical: 10, horizontal: 10)
+        : isMobile
+            ? EdgeInsets.symmetric(vertical: 14, horizontal: 14)
+            : EdgeInsets.symmetric(vertical: 18, horizontal: 18);
+    final titleFontSize = isNarrow ? 13.5 : (isMobile ? 15.0 : 16.0);
+    final subtitleFontSize = isNarrow ? 11.0 : (isMobile ? 12.0 : 13.0);
+    final iconSize = isNarrow ? 16.0 : (isMobile ? 18.0 : 20.0);
+    final buttonPadding = isNarrow
+        ? EdgeInsets.symmetric(horizontal: 6, vertical: 7)
+        : EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+    final buttonFontSize = isNarrow ? 11.5 : (isMobile ? 13.0 : 14.0);
+    final buttonSpacing = isNarrow ? 6.0 : 10.0;
+    final cardElevation = isMobile ? 1.5 : 2.5;
+
+    return Material(
+      elevation: cardElevation,
+      borderRadius: BorderRadius.circular(10),
+      color: Colors.white,
+      child: Container(
+        width: double.infinity,
+        padding: cardPadding,
+        margin: EdgeInsets.only(bottom: isNarrow ? 6 : 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Class Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${schoolClass.className} - ${schoolClass.section}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: titleFontSize,
                     ),
-                  );
-                },
-                icon: Icon(Icons.bar_chart_rounded, size: 16),
-                label: Text('View Report'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1976D2),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: isNarrow ? 2 : 4),
+                  Text(
+                    '${schoolClass.students.length} students',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: subtitleFontSize,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+            SizedBox(width: isNarrow ? 6 : 14),
+            // Actions
+            Flexible(
+              child: isNarrow
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _ClassCardActionButton(
+                          label: 'Upload Marks',
+                          icon: Icons.file_upload_outlined,
+                          isPrimary: true,
+                          onPressed: () {
+                            _showExamSelectionDialog(classId, schoolClass.className, schoolClass.section);
+                          },
+                        ),
+                        SizedBox(height: buttonSpacing),
+                        _ClassCardActionButton(
+                          label: 'View Report',
+                          icon: Icons.bar_chart_rounded,
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ViewMarksReportPage(
+                                  schoolCode: widget.schoolCode,
+                                  classId: classId,
+                                  className: schoolClass.className,
+                                  section: schoolClass.section,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _ClassCardActionButton(
+                          label: 'Upload Marks',
+                          icon: Icons.file_upload_outlined,
+                          isPrimary: true,
+                          onPressed: () {
+                            _showExamSelectionDialog(classId, schoolClass.className, schoolClass.section);
+                          },
+                        ),
+                        SizedBox(width: buttonSpacing),
+                        _ClassCardActionButton(
+                          label: 'View Report',
+                          icon: Icons.bar_chart_rounded,
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ViewMarksReportPage(
+                                  schoolCode: widget.schoolCode,
+                                  classId: classId,
+                                  className: schoolClass.className,
+                                  section: schoolClass.section,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 
   void _showExamSelectionDialog(String classId, String className, String section) async {
     await showDialog(
@@ -446,4 +508,53 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   Widget _marksUploadTab(bool isMobile) {
   return TeacherMarksPanel(isMobile: isMobile);
 }
+}
+
+class _ClassCardActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isPrimary;
+
+  const _ClassCardActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isPrimary 
+            ? Theme.of(context).colorScheme.primary 
+            : Theme.of(context).colorScheme.surfaceVariant,
+        foregroundColor: isPrimary 
+            ? Theme.of(context).colorScheme.onPrimary 
+            : Theme.of(context).colorScheme.onSurfaceVariant,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+        minimumSize: Size(isSmallScreen ? 100 : 120, 36),
+      ),
+      icon: Icon(
+        icon,
+        size: isSmallScreen ? 16 : 18,
+      ),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: isSmallScreen ? 12 : 14,
+          fontWeight: isPrimary ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+    );
+  }
 }
