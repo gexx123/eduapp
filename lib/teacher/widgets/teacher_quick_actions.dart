@@ -17,29 +17,31 @@ class TeacherQuickActions extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: isMobile ? 10 : 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           if (showManageClass) ...[
-            SizedBox(width: isMobile ? 10 : 18),
             ElevatedButton.icon(
               onPressed: onManageClass,
-              icon: Icon(Icons.edit, size: isMobile ? 18 : 20),
+              icon: Icon(Icons.edit, size: isMobile ? 16 : 18),
               label: Text(
                 'Manage Class',
-                style: TextStyle(fontSize: isMobile ? 13 : 14),
+                style: TextStyle(
+                  fontSize: isMobile ? 12 : 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1976D2),
+                backgroundColor: const Color(0xFF5B8DEE),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(color: Colors.white.withOpacity(0.2)),
                 ),
                 padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 12 : 18,
-                  vertical: isMobile ? 10 : 12,
+                  horizontal: isMobile ? 10 : 14,
+                  vertical: isMobile ? 8 : 10,
                 ),
-                elevation: 2,
+                elevation: 0,
+                minimumSize: Size(isMobile ? 100 : 120, 36),
               ),
             ),
           ],
