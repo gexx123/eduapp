@@ -26,14 +26,71 @@ class TeacherClassesOverview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 18),
-        Text(
-          'Classes & Student Marks',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: MediaQuery.of(context).size.width <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        Builder(
+          builder: (context) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            final showRow = screenWidth > 400;
+            if (onManageClass != null && showRow) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Classes & Student Marks',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  TeacherQuickActions(
+                    isMobile: isMobile,
+                    onManageClass: onManageClass!,
+                    showManageClass: true,
+                  ),
+                ],
+              );
+            } else if (onManageClass != null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Classes & Student Marks',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Spacer(),
+                      TeacherQuickActions(
+                        isMobile: isMobile,
+                        onManageClass: onManageClass!,
+                        showManageClass: true,
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+              return Text(
+                'Classes & Student Marks',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              );
+            }
+          },
         ),
         SizedBox(height: MediaQuery.of(context).size.width <= 360 ? 1 : 2),
         Text(
