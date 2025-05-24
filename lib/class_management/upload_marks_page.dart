@@ -76,13 +76,18 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
     Map<String, dynamic> liveSubjectTeachers = {};
     List<String> liveSubjects = [];
     String? classTeacherName;
+    String? createdByUid;
     
     if (classDoc.exists && classDoc.data() != null) {
       final classData = classDoc.data()!;
       liveSubjectTeachers = Map<String, dynamic>.from(classData['subjectTeachers'] ?? {});
       liveSubjects = List<String>.from(classData['subjects'] ?? []);
       classTeacherName = classData['classTeacherName'];
+      createdByUid = classData['createdBy'];
     }
+    
+    // Check if current user is the creator of the class
+    bool isCreator = currentUser.uid == createdByUid;
     
     // Check which subjects are assigned to the current teacher
     List<String> currentTeacherSubjects = [];
@@ -115,16 +120,16 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
     bool hasUnassigned = liveSubjects.isEmpty || liveSubjects.any((s) => 
         liveSubjectTeachers[s] == null || (liveSubjectTeachers[s] as String).trim().isEmpty);
     
-    // For non-class teachers with assigned subjects, proceed directly
-    if (!isClassTeacher && currentTeacherSubjects.isNotEmpty) {
+    // For teachers with assigned subjects who are not the creator, proceed directly
+    if (!isCreator && currentTeacherSubjects.isNotEmpty) {
       // Filter to only show subjects taught by this teacher
       subjects = currentTeacherSubjects;
       await _fetchUserAndClassContext(limitToOwnSubjects: true);
       return;
     }
     
-    // For non-class teachers with no assigned subjects, show message and exit
-    if (!isClassTeacher && currentTeacherSubjects.isEmpty) {
+    // For teachers with no assigned subjects who are not the creator, show message and exit
+    if (!isCreator && currentTeacherSubjects.isEmpty) {
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('You don\'t have any subjects assigned to you in this class.')),
@@ -133,16 +138,16 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
       return;
     }
     
-    // Only show the dialog to class teachers when there are unassigned subjects
-    if (hasUnassigned && isClassTeacher) {
+    // Only show the dialog to the creator of the class when there are unassigned subjects
+    if (hasUnassigned && isCreator) {
       final goToAssign = await showNotifyAssignTeacherDialog(
         context, 
         classTeacherName: classTeacherName,
       );
       
       if (goToAssign == true) {
-        // User chose "Assign Teacher" - only class teachers can manage class
-        if (isClassTeacher) {
+        // User chose "Assign Teacher" - only the creator can manage class
+        if (isCreator) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (_) => ManageClassPage(
@@ -159,9 +164,9 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
             ),
           );
         } else {
-          // Non-class teachers can't manage the class
+          // Non-creators can't manage the class
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Only the class teacher can manage subject assignments.')),
+            SnackBar(content: Text('Only the creator of this class can manage subject assignments.')),
           );
           // Check if they have any subjects assigned
           if (currentTeacherSubjects.isNotEmpty) {

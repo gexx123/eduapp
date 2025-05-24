@@ -52178,9 +52178,9 @@ s=t.N
 return new A.NJ(new A.i3(A.c3(new A.aL(r))),A.a([],t.H7),A.r(s,t.rm),A.a([],t.s),A.r(s,t.z),A.r(s,t.QX))}}
 A.NJ.prototype={
 lp(){return this.acQ()},
-acQ(){var s=0,r=A.I(t.H),q,p=this,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3
-var $async$lp=A.E(function(a4,a5){if(a4===1)return A.F(a5,r)
-while(true)switch(s){case 0:a3={}
+acQ(){var s=0,r=A.I(t.H),q,p=this,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5
+var $async$lp=A.E(function(a6,a7){if(a6===1)return A.F(a7,r)
+while(true)switch(s){case 0:a5={}
 p.Y(new A.aJJ(p))
 o=$.a0
 n=(o==null?$.a0=$.aQ():o).aK("[DEFAULT]")
@@ -52193,111 +52193,115 @@ break}l=$.a0
 n=(l==null?$.a0=$.aQ():l).aK("[DEFAULT]")
 A.az(n,o,!0)
 l=A.c3(new A.aL(n))
+l=A.c_(l,l.gbc().aU("group_member"))
+k=m.a.c.a.a
 s=3
-return A.u(A.c_(l,l.gbc().aU("group_member")).f3(0,"userId",m.a.c.a.a).f3(0,"schoolCode",p.a.c).hg(1).cH(0),$async$lp)
-case 3:k=a5
-a3.a=null
-if(k.gcC().length!==0){l=B.m.ga0(k.gcC())
-j=J.ej(l).fa(l)
-l=a3.a=j.h(0,"name")
-i=J.e(j.h(0,"classAssigned"),p.a.d)}else{i=!1
-l=null}h=$.a0
+return A.u(l.f3(0,"userId",k).f3(0,"schoolCode",p.a.c).hg(1).cH(0),$async$lp)
+case 3:j=a7
+a5.a=null
+if(j.gcC().length!==0){l=B.m.ga0(j.gcC())
+i=J.ej(l).fa(l)
+l=a5.a=i.h(0,"name")
+J.e(i.h(0,"classAssigned"),p.a.d)}else l=null
+h=$.a0
 n=(h==null?$.a0=$.aQ():h).aK("[DEFAULT]")
 A.az(n,o,!0)
 h=A.c3(new A.aL(n))
 s=4
 return A.u(A.c_(h,h.gbc().aU("school_classes")).bd(p.a.c).aU("classesData").bd(p.a.d).cH(0),$async$lp)
-case 4:g=a5
+case 4:g=a7
 h=t.N
 f=t.z
-e=a3.b=A.r(h,f)
+e=a5.b=A.r(h,f)
 d=t.s
-a3.c=A.a([],d)
-a3.d=null
+a5.c=A.a([],d)
+a5.d=null
 if(g.gpk()&&g.ez(0)!=null){c=g.ez(0)
 e=c.h(0,"subjectTeachers")
-e=a3.b=A.f2(e==null?A.r(f,f):e,h,f)
+e=a5.b=A.f2(e==null?A.r(f,f):e,h,f)
 b=c.h(0,"subjects")
-a3.c=A.cY(b==null?[]:b,!0,h)
-a3.d=c.h(0,"classTeacherName")
-h=e}else h=e
-a=A.a([],d)
-if(l!=null)h.aw(0,new A.aJL(a3,a))
+a5.c=A.cY(b==null?[]:b,!0,h)
+a5.d=c.h(0,"classTeacherName")
+a=c.h(0,"createdBy")
+h=e}else{h=e
+a=null}a0=k===a
+a1=A.a([],d)
+if(l!=null)h.aw(0,new A.aJL(a5,a1))
 l=$.a0
 n=(l==null?$.a0=$.aQ():l).aK("[DEFAULT]")
 A.az(n,o,!0)
 o=A.c3(new A.aL(n))
 s=5
 return A.u(A.c_(o,o.gbc().aU("student_master")).bd(p.a.c).aU(p.a.d).bd("students").cH(0),$async$lp)
-case 5:a0=a5.ez(0)
-if(a0!=null&&a0.h(0,"students")!=null)p.f=A.cY(a0.h(0,"students"),!0,t.P)
+case 5:a2=a7.ez(0)
+if(a2!=null&&a2.h(0,"students")!=null)p.f=A.cY(a2.h(0,"students"),!0,t.P)
 else p.f=A.a([],t.H7)
 p.Y(new A.aJM(p))
-o=a3.c
-a1=o.length===0||B.m.fS(o,new A.aJN(a3))
-o=!i
-s=o&&a.length!==0?6:7
+o=a5.c
+a3=o.length===0||B.m.fS(o,new A.aJN(a5))
+o=!a0
+s=o&&a1.length!==0?6:7
 break
-case 6:p.w=a
+case 6:p.w=a1
 s=8
 return A.u(p.ml(!0),$async$lp)
 case 8:s=1
 break
-case 7:if(o&&a.length===0){p.Y(new A.aJO(p))
+case 7:if(o&&a1.length===0){p.Y(new A.aJO(p))
 p.c.ai(t.J).f.ek(A.ef(null,null,null,null,null,B.W,null,A.t(u._,null,null,null,null,null,null,null),null,B.b9,null,null,null,null,null,null,null,null,null))
-a3=p.c
-a3.toString
-A.bI(a3,!1).fJ(null)
+a5=p.c
+a5.toString
+A.bI(a5,!1).fJ(null)
 s=1
-break}s=a1&&i?9:11
+break}s=a3&&a0?9:11
 break
 case 9:o=p.c
 o.toString
 s=12
-return A.u(A.aRo(o,a3.d),$async$lp)
-case 12:a2=a5
-s=a2===!0?13:15
+return A.u(A.aRo(o,a5.d),$async$lp)
+case 12:a4=a7
+s=a4===!0?13:15
 break
 case 13:o=p.c
-s=i?16:18
+s=a0?16:18
 break
 case 16:o.toString
-A.bI(o,!1).aB1(A.hd(new A.aJP(a3,p),null,f))
+A.bI(o,!1).aB1(A.hd(new A.aJP(a5,p),null,f))
 s=17
 break
-case 18:a3=t.J
-o.ai(a3).f.ek(A.ef(null,null,null,null,null,B.W,null,A.t("Only the class teacher can manage subject assignments.",null,null,null,null,null,null,null),null,B.b9,null,null,null,null,null,null,null,null,null))
-s=a.length!==0?19:21
+case 18:a5=t.J
+o.ai(a5).f.ek(A.ef(null,null,null,null,null,B.W,null,A.t("Only the creator of this class can manage subject assignments.",null,null,null,null,null,null,null),null,B.b9,null,null,null,null,null,null,null,null,null))
+s=a1.length!==0?19:21
 break
-case 19:p.w=a
+case 19:p.w=a1
 s=22
 return A.u(p.ml(!0),$async$lp)
 case 22:s=20
 break
-case 21:p.c.ai(a3).f.ek(A.ef(null,null,null,null,null,B.W,null,A.t(u._,null,null,null,null,null,null,null),null,B.b9,null,null,null,null,null,null,null,null,null))
-a3=p.c
-a3.toString
-A.bI(a3,!1).fJ(null)
+case 21:p.c.ai(a5).f.ek(A.ef(null,null,null,null,null,B.W,null,A.t(u._,null,null,null,null,null,null,null),null,B.b9,null,null,null,null,null,null,null,null,null))
+a5=p.c
+a5.toString
+A.bI(a5,!1).fJ(null)
 case 20:case 17:s=14
 break
-case 15:s=a2===!1?23:25
+case 15:s=a4===!1?23:25
 break
-case 23:s=a.length!==0?26:28
+case 23:s=a1.length!==0?26:28
 break
-case 26:p.w=a
+case 26:p.w=a1
 s=29
 return A.u(p.ml(!0),$async$lp)
 case 29:s=27
 break
 case 28:p.c.ai(t.J).f.ek(A.ef(null,null,null,null,null,B.W,null,A.t(u._,null,null,null,null,null,null,null),null,B.b9,null,null,null,null,null,null,null,null,null))
-a3=p.c
-a3.toString
-A.bI(a3,!1).fJ(null)
+a5=p.c
+a5.toString
+A.bI(a5,!1).fJ(null)
 case 27:s=24
 break
-case 25:a3=p.c
-a3.toString
-A.bI(a3,!1).fJ(null)
+case 25:a5=p.c
+a5.toString
+A.bI(a5,!1).fJ(null)
 case 24:case 14:s=10
 break
 case 11:s=30
@@ -55057,19 +55061,19 @@ B.m.T(h,A.a([A.bK(o,A.bb(A.a([q,p,new A.hz(1,B.d2,A.t("Class Teacher: "+i,o,o,o,
 h.push(A.U(o,10,o))
 h.push(A.t("You can assign teachers later or proceed with uploading marks for your own subjects now.",o,o,o,o,A.O(o,o,B.a0,o,o,o,o,o,o,o,o,k?13:14,o,o,o,o,o,!0,o,o,o,o,o,o,o,o),B.b3,o))
 h.push(A.U(o,24,o))
-i=A.f1(o,o,B.F,o,o,o,0,o,o,A.D(m).ax.b,o,o,new A.M(16,10,16,10),o,new A.bt(A.as(8),new A.aS(A.D(m).ax.b.aR(0.5),1,B.Z,-1)),o,o,o,o,o)
-i=A.hx(!1,A.t("Assign Teacher Later",o,o,o,o,o,o,o),o,o,o,o,o,o,new A.aNb(a),o,i)
+i=A.f1(o,o,A.D(m).ax.b,o,o,o,0,o,o,B.F,o,o,new A.M(22,10,22,10),o,new A.bt(A.as(8),B.P),o,o,o,A.O(o,o,o,o,o,o,o,o,o,o,o,o,o,o,B.J,o,o,!0,o,o,o,o,o,o,o,o),o)
+i=A.hx(!1,A.t("Assign Teacher",o,o,o,o,o,o,o),o,o,o,o,o,o,new A.aNb(a),o,i)
 s=A.U(o,o,8)
-m=A.f1(o,o,A.D(m).ax.b,o,o,o,0,o,o,B.F,o,o,new A.M(22,10,22,10),o,new A.bt(A.as(8),B.P),o,o,o,A.O(o,o,o,o,o,o,o,o,o,o,o,o,o,o,B.J,o,o,!0,o,o,o,o,o,o,o,o),o)
-h.push(A.bb(A.a([i,s,A.hx(!1,A.t("Assign Teacher",o,o,o,o,o,o,o),o,o,o,o,o,o,new A.aNc(a),o,m)],g),B.U,B.dN,B.Q,o))
+m=A.f1(o,o,B.F,o,o,o,0,o,o,A.D(m).ax.b,o,o,new A.M(16,10,16,10),o,new A.bt(A.as(8),new A.aS(A.D(m).ax.b.aR(0.5),1,B.Z,-1)),o,o,o,o,o)
+h.push(A.bb(A.a([i,s,A.hx(!1,A.t("Assign Teacher Later",o,o,o,o,o,o,o),o,o,o,o,o,o,new A.aNc(a),o,m)],g),B.U,B.dN,B.Q,o))
 return A.t9(o,l.bY,A.bK(o,A.bJ(h,B.U,B.L,B.aK),B.R,o,o,o,o,o,B.o9,o,o,j),o,o,o,B.eT,o,new A.bt(n,B.P),o)},
 $S:76}
 A.aNb.prototype={
-$0(){A.bI(this.a,!1).fJ(!1)
+$0(){A.bI(this.a,!1).fJ(!0)
 return null},
 $S:0}
 A.aNc.prototype={
-$0(){A.bI(this.a,!1).fJ(!0)
+$0(){A.bI(this.a,!1).fJ(!1)
 return null},
 $S:0}
 A.Xt.prototype={

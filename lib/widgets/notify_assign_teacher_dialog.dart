@@ -72,6 +72,19 @@ Future<bool?> showNotifyAssignTeacherDialog(BuildContext context, {String? class
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                    textStyle: TextStyle(fontWeight: FontWeight.bold),
+                    elevation: 0,
+                  ),
+                  child: Text('Assign Teacher'),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton(
                   onPressed: () => Navigator.pop(ctx, false),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -84,19 +97,6 @@ Future<bool?> showNotifyAssignTeacherDialog(BuildContext context, {String? class
                     elevation: 0,
                   ),
                   child: Text('Assign Teacher Later'),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                    textStyle: TextStyle(fontWeight: FontWeight.bold),
-                    elevation: 0,
-                  ),
-                  child: Text('Assign Teacher'),
                 ),
               ],
             ),
