@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
 /// Shows a dialog notifying the user to assign teachers before uploading marks.
-/// Returns true if the user wants to navigate to Manage Class, false otherwise.
-Future<bool?> showNotifyAssignTeacherDialog(BuildContext context) async {
+/// Displays the class teacher information for context.
+/// 
+/// [classTeacherName] - The name of the class teacher (if available)
+/// 
+/// Returns:
+/// - true: User wants to navigate to Manage Class to assign teachers
+/// - false: User wants to proceed with uploading marks for their own subjects only
+/// - null: Dialog was dismissed
+Future<bool?> showNotifyAssignTeacherDialog(BuildContext context, {String? classTeacherName}) async {
   final isMobile = MediaQuery.of(context).size.width < 600;
   return showDialog<bool>(
     context: context,
@@ -25,18 +32,58 @@ Future<bool?> showNotifyAssignTeacherDialog(BuildContext context) async {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 14),
+            if (classTeacherName != null) ...[              
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade100),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person, size: 16, color: Colors.blue.shade700),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Class Teacher: $classTeacherName',
+                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: isMobile ? 13 : 14, color: Colors.blue.shade800),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 14),
+            ],
             Text(
-              'You must assign teachers to all subjects in this class before uploading marks.',
+              'Assign teachers to all subjects in this class for complete mark management.',
               style: TextStyle(fontSize: isMobile ? 15 : 16, color: Colors.black87),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            Text(
+              'You can assign teachers later or proceed with uploading marks for your own subjects now.',
+              style: TextStyle(fontSize: isMobile ? 13 : 14, color: Colors.black54),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
+                ElevatedButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: Text('Cancel'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    elevation: 0,
+                  ),
+                  child: Text('Assign Teacher Later'),
                 ),
                 SizedBox(width: 8),
                 ElevatedButton(

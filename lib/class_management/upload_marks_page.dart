@@ -39,19 +39,61 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
   Map<String, dynamic> subjectTeachers = {};
   Future<void> _checkTeachersAssignedAndProceed() async {
     setState(() => loading = true);
+    
+    // Get current user info
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      setState(() => loading = false);
+      return;
+    }
+    
+    // Get teacher name and role from group_member
+    final userGroupSnap = await FirebaseFirestore.instance
+        .collection('group_member')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('schoolCode', isEqualTo: widget.schoolCode)
+        .limit(1)
+        .get();
+        
+    String? currentTeacherName;
+    bool isClassTeacher = false;
+    
+    if (userGroupSnap.docs.isNotEmpty) {
+      final userGroupData = userGroupSnap.docs.first.data();
+      currentTeacherName = userGroupData['name'];
+      // Check if this person is the class teacher
+      isClassTeacher = userGroupData['classAssigned'] == widget.classId;
+    }
+    
+    // Fetch class data
     final classDoc = await FirebaseFirestore.instance
         .collection('school_classes')
         .doc(widget.schoolCode)
         .collection('classesData')
         .doc(widget.classId)
         .get();
+        
     Map<String, dynamic> liveSubjectTeachers = {};
     List<String> liveSubjects = [];
+    String? classTeacherName;
+    
     if (classDoc.exists && classDoc.data() != null) {
-      liveSubjectTeachers = Map<String, dynamic>.from(classDoc.data()!['subjectTeachers'] ?? {});
-      liveSubjects = List<String>.from(classDoc.data()!['subjects'] ?? []);
+      final classData = classDoc.data()!;
+      liveSubjectTeachers = Map<String, dynamic>.from(classData['subjectTeachers'] ?? {});
+      liveSubjects = List<String>.from(classData['subjects'] ?? []);
+      classTeacherName = classData['classTeacherName'];
     }
-    bool hasUnassigned = liveSubjects.isEmpty || liveSubjects.any((s) => liveSubjectTeachers[s] == null || (liveSubjectTeachers[s] as String).trim().isEmpty);
+    
+    // Check which subjects are assigned to the current teacher
+    List<String> currentTeacherSubjects = [];
+    if (currentTeacherName != null) {
+      liveSubjectTeachers.forEach((subject, teacher) {
+        if (teacher == currentTeacherName) {
+          currentTeacherSubjects.add(subject);
+        }
+      });
+    }
+    
     // Always fetch students to keep them in memory
     final doc = await FirebaseFirestore.instance
         .collection('student_master')
@@ -59,37 +101,104 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
         .collection(widget.classId)
         .doc('students')
         .get();
+        
     final data = doc.data();
     if (data != null && data['students'] != null) {
       students = List<Map<String, dynamic>>.from(data['students']);
     } else {
       students = [];
     }
+    
     setState(() => loading = false);
-    if (hasUnassigned) {
-      final goToAssign = await showNotifyAssignTeacherDialog(context);
+    
+    // Check if there are unassigned subjects
+    bool hasUnassigned = liveSubjects.isEmpty || liveSubjects.any((s) => 
+        liveSubjectTeachers[s] == null || (liveSubjectTeachers[s] as String).trim().isEmpty);
+    
+    // For non-class teachers with assigned subjects, proceed directly
+    if (!isClassTeacher && currentTeacherSubjects.isNotEmpty) {
+      // Filter to only show subjects taught by this teacher
+      subjects = currentTeacherSubjects;
+      await _fetchUserAndClassContext(limitToOwnSubjects: true);
+      return;
+    }
+    
+    // For non-class teachers with no assigned subjects, show message and exit
+    if (!isClassTeacher && currentTeacherSubjects.isEmpty) {
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You don\'t have any subjects assigned to you in this class.')),
+      );
+      Navigator.pop(context);
+      return;
+    }
+    
+    // Only show the dialog to class teachers when there are unassigned subjects
+    if (hasUnassigned && isClassTeacher) {
+      final goToAssign = await showNotifyAssignTeacherDialog(
+        context, 
+        classTeacherName: classTeacherName,
+      );
+      
       if (goToAssign == true) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => ManageClassPage(
-              schoolClass: SchoolClass(
-                className: widget.className,
-                section: widget.section,
-                subjects: liveSubjects,
-                students: students,
-                subjectTeachers: liveSubjectTeachers,
-                classTeacherName: null,
+        // User chose "Assign Teacher" - only class teachers can manage class
+        if (isClassTeacher) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => ManageClassPage(
+                schoolClass: SchoolClass(
+                  className: widget.className,
+                  section: widget.section,
+                  subjects: liveSubjects,
+                  students: students,
+                  subjectTeachers: liveSubjectTeachers,
+                  classTeacherName: classTeacherName,
+                ),
+                schoolCode: widget.schoolCode,
               ),
-              schoolCode: widget.schoolCode,
             ),
-          ),
-        );
+          );
+        } else {
+          // Non-class teachers can't manage the class
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Only the class teacher can manage subject assignments.')),
+          );
+          // Check if they have any subjects assigned
+          if (currentTeacherSubjects.isNotEmpty) {
+            // Filter to only show subjects taught by this teacher
+            subjects = currentTeacherSubjects;
+            await _fetchUserAndClassContext(limitToOwnSubjects: true);
+          } else {
+            // No subjects assigned to this teacher
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('You don\'t have any subjects assigned to you in this class.')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } else if (goToAssign == false) {
+        // User chose "Assign Teacher Later" - proceed with their own subjects
+        if (currentTeacherSubjects.isNotEmpty) {
+          // Filter to only show subjects taught by this teacher
+          subjects = currentTeacherSubjects;
+          await _fetchUserAndClassContext(limitToOwnSubjects: true);
+        } else {
+          // No subjects assigned to this teacher
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('You don\'t have any subjects assigned to you in this class.')),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        // Dialog dismissed - go back
+        Navigator.pop(context);
       }
     } else {
-      // Proceed to normal context fetch and UI
+      // Class teacher with all subjects assigned - proceed normally
       await _fetchUserAndClassContext();
     }
   }
+
   String? teacherName;
   String? userRole;
   Map<String, TextEditingController> outOfControllers = {};
@@ -114,39 +223,55 @@ class _UploadMarksPageState extends State<UploadMarksPage> {
     _checkTeachersAssignedAndProceed();
   }
 
-  Future<void> _fetchUserAndClassContext() async {
+  Future<void> _fetchUserAndClassContext({bool limitToOwnSubjects = false}) async {
     setState(() => loading = true);
     final user = FirebaseAuth.instance.currentUser;
     final groupSnap = await FirebaseFirestore.instance
         .collection('group_member')
         .where('userId', isEqualTo: user?.uid)
+        .where('schoolCode', isEqualTo: widget.schoolCode)
         .limit(1)
         .get();
     if (groupSnap.docs.isNotEmpty) {
       teacherName = groupSnap.docs.first.data()['name'];
       userRole = groupSnap.docs.first.data()['role'];
     }
-    final classDoc = await FirebaseFirestore.instance
-        .collection('school_classes')
-        .doc(widget.schoolCode)
-        .collection('classesData')
-        .doc(widget.classId)
-        .get();
-    if (classDoc.exists && classDoc.data() != null) {
-      subjectTeachers = Map<String, dynamic>.from(classDoc.data()!['subjectTeachers'] ?? {});
-      subjects = List<String>.from(classDoc.data()!['subjects'] ?? []);
+    
+    // If we already have subjects (passed from _checkTeachersAssignedAndProceed)
+    // and limitToOwnSubjects is true, we'll skip fetching all subjects
+    if (!limitToOwnSubjects || subjects.isEmpty) {
+      final classDoc = await FirebaseFirestore.instance
+          .collection('school_classes')
+          .doc(widget.schoolCode)
+          .collection('classesData')
+          .doc(widget.classId)
+          .get();
+      if (classDoc.exists && classDoc.data() != null) {
+        subjectTeachers = Map<String, dynamic>.from(classDoc.data()!['subjectTeachers'] ?? {});
+        
+        // Only override subjects if we're not limiting to own subjects
+        if (!limitToOwnSubjects) {
+          subjects = List<String>.from(classDoc.data()!['subjects'] ?? []);
+        }
+      }
     }
-    final doc = await FirebaseFirestore.instance
-        .collection('student_master')
-        .doc(widget.schoolCode)
-        .collection(widget.classId)
-        .doc('students')
-        .get();
-    final data = doc.data();
-    if (data != null && data['students'] != null) {
-      students = List<Map<String, dynamic>>.from(data['students']);
+    
+    // Fetch students if needed
+    if (students.isEmpty) {
+      final doc = await FirebaseFirestore.instance
+          .collection('student_master')
+          .doc(widget.schoolCode)
+          .collection(widget.classId)
+          .doc('students')
+          .get();
+      final data = doc.data();
+      if (data != null && data['students'] != null) {
+        students = List<Map<String, dynamic>>.from(data['students']);
+      }
     }
-    if (userRole == 'teacher' && teacherName != null) {
+    
+    // If not limiting to own subjects, filter for teacher's subjects
+    if (!limitToOwnSubjects && userRole == 'teacher' && teacherName != null) {
       final assignedSubjects = subjectTeachers.entries
           .where((e) => (e.value?.toString()?.toLowerCase() ?? '') == teacherName!.toLowerCase())
           .map((e) => e.key)
