@@ -384,30 +384,26 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${schoolClass.className} - ${schoolClass.section}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: titleFontSize,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: isNarrow ? 2 : 4),
-                      Text(
-                        '${schoolClass.students.length} students',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: subtitleFontSize,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  child: Text(
+                    'Class: ${schoolClass.className} - ${schoolClass.section}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: titleFontSize,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'Students: ${schoolClass.students.length}',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: subtitleFontSize,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
