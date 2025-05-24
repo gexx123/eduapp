@@ -36,14 +36,29 @@ class TeacherClassesOverview extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Text(
-                      'Classes & Student Marks',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Classes & Student Marks',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Manage your classes and upload student marks',
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: screenWidth <= 360 ? 11.0 : (isMobile ? 12.0 : 14.0),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                   TeacherQuickActions(
@@ -66,6 +81,16 @@ class TeacherClassesOverview extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Manage your classes and upload student marks',
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: screenWidth <= 360 ? 11.0 : (isMobile ? 12.0 : 14.0),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   SizedBox(height: 6),
                   Row(
                     children: [
@@ -80,39 +105,34 @@ class TeacherClassesOverview extends StatelessWidget {
                 ],
               );
             } else {
-              return Text(
-                'Classes & Student Marks',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Classes & Student Marks',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth <= 360 ? 15.0 : (isMobile ? 17.0 : 22.0),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Manage your classes and upload student marks',
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: screenWidth <= 360 ? 11.0 : (isMobile ? 12.0 : 14.0),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               );
             }
           },
         ),
-        SizedBox(height: MediaQuery.of(context).size.width <= 360 ? 1 : 2),
-        Text(
-          'Manage your classes and upload student marks',
-          style: TextStyle(
-            color: Colors.black54,
-            fontSize: MediaQuery.of(context).size.width <= 360 ? 11.0 : (isMobile ? 12.0 : 14.0),
-          ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        SizedBox(height: MediaQuery.of(context).size.width <= 360 ? 6 : (isMobile ? 10 : 16)),
-        if (onManageClass != null)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: TeacherQuickActions(
-              isMobile: isMobile,
-              onManageClass: onManageClass!,
-              showManageClass: true,
-            ),
-          ),
-        SizedBox(height: MediaQuery.of(context).size.width <= 360 ? 10 : 18),
+        SizedBox(height: isMobile ? 10 : 18),
         StreamBuilder<List<SchoolClass>>(
           stream: FirestoreService().getClassesForTeacher(schoolCode, '', teacherName: teacherName),
           builder: classListBuilder,
